@@ -223,6 +223,7 @@ int                main                                    ( void )
   a [ 1 ] = 3.5;
   a [ 3 ] = 1;  
 
+  /*
   assert ( smallDiff ( a ( 2 ), 5 ) );
   out . str ("");
   out << a;
@@ -282,6 +283,7 @@ int                main                                    ( void )
   out . str ("");
   out << polynomial_variable ( "test" ) << c;
   assert ( out . str () == "2*test^8 + 7*test^6 - 20*test^5" );
+  */
   return 0;
 }
 #endif /* __PROGTEST__ */
