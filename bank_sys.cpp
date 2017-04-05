@@ -16,8 +16,13 @@ public:
   // default constructor
     CBank ( void )
     {
+        T_Complete m_item;
 
+        *m_first_item = m_item;
+        m_item.m_last = NULL;
+        m_item.m_next = NULL;
     }
+
   // copy constructor
   // destructor
     ~CBank ( void )
@@ -31,12 +36,18 @@ public:
 
     }
   
-  
     bool NewAccount ( const char * accID,
         int initialBalance )
     {
+        T_Complete cmp_item;
 
+        while ( cmp_item.m_next != NULL )
+        {
+
+        }
+        return true;
     }
+
     bool Transaction ( const char * debAccID,
         const char * credAccID,
         int          amount,
@@ -44,10 +55,12 @@ public:
     {
 
     }
+    
     bool TrimAccount ( const char * accID )
     {
         
     }
+
   // Account ( accID )
     int & Balance ( void )
     {
@@ -81,12 +94,8 @@ private:
         T_Complete * m_next;
     };
 
-    T_Complete * m_array;
-
-    T_Complete * arr_realloc ( T_Complete * arr )
-    {
-        //todo
-    }
+    T_Complete * m_first_item;
+    T_Complete * m_last_item;
 };
 
 #ifndef __PROGTEST__
