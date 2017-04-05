@@ -16,7 +16,7 @@ public:
   // default constructor
     CBank ( void )
     {
-  
+
     }
   // copy constructor
   // destructor
@@ -60,17 +60,33 @@ private:
     // todo
     struct T_Register
     {
-        char * acc_id;
-        int init_balance;
+        char * m_acc_id;
+        int m_init_balance;
     };
 
     struct T_Transaction
     {
-        char * src_acc_id;
-        char * dest_acc_id;
-        int cash_amount;
-        char * sign;
+        char * m_src_acc_id;
+        char * m_dest_acc_id;
+        int m_cash_amount;
+        char * m_sign;
     };
+
+    struct T_Complete
+    {
+        T_Register t_new_account;
+        T_Transaction t_new_transaction;
+        
+        T_Complete * m_last;
+        T_Complete * m_next;
+    };
+
+    T_Complete * m_array;
+
+    T_Complete * arr_realloc ( T_Complete * arr )
+    {
+        //todo
+    }
 };
 
 #ifndef __PROGTEST__
