@@ -16,43 +16,79 @@ public:
   // default constructor
     CBank ( void )
     {
-        T_Complete m_item;
-
-        *m_first_item = m_item;
         m_item.m_last = NULL;
         m_item.m_next = NULL;
+        *m_head_item = m_item;
+        *m_tail_item = m_item;
+
+        m_total = 0;
     }
 
   // copy constructor
   // destructor
     ~CBank ( void )
     {
-  
+          
     }
   
   // operator =
     CBank operator = ( CBank inst_b )
     {
+        T_Complete current_item, *last_item = NULL;
+        while ( true )
+        {
+            current_item.m_last = last_item;
+            current_item.m_next = NULL;
 
+            current_item.t_new_account.m_acc_id =           m_item.t_new_account.m_acc_id;
+            current_item.t_new_account.m_init_balance =     m_item.t_new_account.m_init_balance;
+
+            current_item.t_new_transaction.m_cash_amount =  m_item.t_new_transaction.m_cash_amount;
+            current_item.t_new_transaction.m_dest_acc_id =  m_item.t_new_transaction.m_dest_acc_id;
+            current_item.t_new_transaction.m_sign =         m_item.t_new_transaction.m_sign;
+            current_item.t_new_transaction.m_src_acc_id =   m_item.t_new_transaction.m_src_acc_id;
+
+            *last_item = current_item;
+            
+            if ( last_item == NULL )
+                *m_head_item = current_item;
+            
+            if ( m_item.m_next == NULL )
+            {
+                *m_tail_item = current_item;
+                break;
+            }
+        }
+        inst_b.m_head_item = m_head_item;
+        inst_b.m_tail_item = m_tail_item;
+        return inst_b;
     }
   
     bool NewAccount ( const char * accID,
         int initialBalance )
     {
-        T_Complete cmp_item;
+        T_Complete tail_item = *m_tail_item;
 
-        while ( cmp_item.m_next != NULL )
+        m_item = *m_head_item;
+        while ( m_item.m_next != NULL )
         {
-
+            if ( m_item.t_new_account.m_acc_id == accID )
+                return false;
         }
         return true;
     }
 
-    bool Transaction ( const char * debAccID,
-        const char * credAccID,
-        int          amount,
+    bool Transaction ( const char * debAccID, // src
+        const char * credAccID, // dest
+        int amount,
         const char * signature )
     {
+        m_item.t_new_transaction.m_src_acc_id = debAccID; // const char* -> char*
+        m_item.t_new_transaction.m_dest_acc_id = credAccID;
+        m_item.t_new_transaction.m_cash_amount = amount;
+        m_item.t_new_transaction.m_sign = signature;
+
+        //todo
 
     }
     
@@ -64,13 +100,11 @@ public:
   // Account ( accID )
     int & Balance ( void )
     {
-        int total;
 
 
-        return total;
+        return m_total;
     }
 private:
-    // todo
     struct T_Register
     {
         char * m_acc_id;
@@ -87,15 +121,16 @@ private:
 
     struct T_Complete
     {
-        T_Register t_new_account;
-        T_Transaction t_new_transaction;
-        
         T_Complete * m_last;
         T_Complete * m_next;
+        T_Register t_new_account;
+        T_Transaction t_new_transaction;
     };
 
-    T_Complete * m_first_item;
-    T_Complete * m_last_item;
+    T_Complete m_item;
+    T_Complete * m_head_item;
+    T_Complete * m_tail_item;
+    int m_total;
 };
 
 #ifndef __PROGTEST__
@@ -104,7 +139,7 @@ int main ( void )
   ostringstream os;
   char accCpy[100], debCpy[100], credCpy[100], signCpy[100];
   CBank x0;
-  assert ( x0 . NewAccount ( "123456", 1000 ) );
+  /*assert ( x0 . NewAccount ( "123456", 1000 ) );
   assert ( x0 . NewAccount ( "987654", -500 ) );
   assert ( x0 . Transaction ( "123456", "987654", 300, "XAbG5uKz6E=" ) );
   assert ( x0 . Transaction ( "123456", "987654", 2890, "AbG5uKz6E=" ) );
@@ -250,7 +285,7 @@ int main ( void )
   assert ( ! strcmp ( os . str () . c_str (), "111111:\n   -1802\n = -1802\n" ) );
   os . str ( "" );
   os << x9 . Account ( "111111" );
-  assert ( ! strcmp ( os . str () . c_str (), "111111:\n   5000\n - 2890, to: 987654, sign: Okh6e+8rAiuT5=\n - 789, to: 987654, sign: SGDFTYE3sdfsd3W\n = 1321\n" ) );
+  assert ( ! strcmp ( os . str () . c_str (), "111111:\n   5000\n - 2890, to: 987654, sign: Okh6e+8rAiuT5=\n - 789, to: 987654, sign: SGDFTYE3sdfsd3W\n = 1321\n" ) );*/
 
   return 0;
 }
