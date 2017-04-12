@@ -16,65 +16,127 @@ public:
   // default constructor
     CBank ( void )
     {
-        m_item.m_last = NULL;
-        m_item.m_next = NULL;
-        *m_head_item = m_item;
-        *m_tail_item = m_item;
-
-        m_total = 0;
+        m_reg_size = 100;
+        m_item_cnt = 0;
+        a_reg_array = new T_Register [ m_reg_size ];
     }
 
   // copy constructor
+    CBank ( CBank & obj )
+    {
+        this->a_reg_array = new T_Register [ obj.m_reg_size ];
+        this->m_reg_size = obj.m_reg_size;
+        this->m_item_cnt = obj.m_item_cnt;
+        
+        for ( unsigned int i = 0; i < obj.m_item_cnt; i++ )
+        {
+            T_Register * reg_this = this->a_reg_array [ i ];
+            T_Register * reg_obj = obj.a_reg_array [ i ];
+
+            strcpy ( reg_this->m_acc_id, reg_obj->m_acc_id ); // string
+            reg_this->m_init_balance = reg_obj->m_init_balance;
+            reg_this->m_actual_balance = reg_obj->m_actual_balance;
+            reg_this->a_trans_size = reg_obj->a_trans_size;
+            reg_this->a_trans_cnt = reg_obj->a_trans_cnt;
+
+            reg_this->a_trans_array = new T_Transaction [ reg_obj->a_trans_size ];
+            for ( unsigned int k = 0; k < reg_obj->a_trans_cnt )
+            {
+                T_Transaction * trans_this = reg_this->a_trans_array [ k ];
+                T_Transaction * trans_obj = reg_obj->a_trans_array [ k ];
+
+                trans_this->m_src_acc_id = new char [ strlen ( trans_obj->m_src_acc_id ) ];
+                trans_this->m_dest_acc_id = new char [ strlen ( trans_obj->m_dest_acc_id ) ];
+                trans_this->m_sign = new char [ strlen ( trans_obj->m_sign ) ];
+
+                strcpy ( trans_this->m_src_acc_id, trans_obj->m_src_acc_id );
+                strcpy ( trans_this->m_dest_acc_id, trans_obj->m_dest_acc_id );
+                strcpy ( trans_this->m_sign, trans_obj->m_sign );
+                trans_this->m_cash_amount = trans_obj->m_cash_amount;
+            }
+        }
+    }
+
   // destructor
     ~CBank ( void )
     {
-          
+        for (unsigned int i = 0;i<this->m_item_cnt;i++ )
+        {
+            for ( unsigned int k = 0; this->a_reg_array [ i ].a_trans_size; k++ )
+            {
+                delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_src_acc_id;
+                delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_dest_acc_id;
+                delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_sign;
+            }
+            delete [] this->a_reg_array [ i ].a_trans_array;
+            delete [] this->a_reg_array [ i ].m_acc_id;
+        }
+        delete [] this->a_reg_array;
     }
   
   // operator =
     CBank operator = ( CBank inst_b )
     {
-        T_Complete current_item, *last_item = NULL;
-        while ( true )
+        CBank ret_obj;
+
+        this->a_reg_array = new T_Register [ inst_b.m_reg_size ];
+        this->m_item_cnt = inst_b.m_item_cnt;
+        this->m_reg_size = inst_b.m_reg_size;
+
+        for ( unsigned int i = 0; i < inst_b.m_reg_size; i++ )
         {
-            current_item.m_last = last_item;
-            current_item.m_next = NULL;
+            T_Register * this_reg_array_item, *that_reg_array_item;
+            T_Transaction * this_trans_array_item, *that_trans_array_item;
 
-            current_item.t_new_account.m_acc_id =           m_item.t_new_account.m_acc_id;
-            current_item.t_new_account.m_init_balance =     m_item.t_new_account.m_init_balance;
-
-            current_item.t_new_transaction.m_cash_amount =  m_item.t_new_transaction.m_cash_amount;
-            current_item.t_new_transaction.m_dest_acc_id =  m_item.t_new_transaction.m_dest_acc_id;
-            current_item.t_new_transaction.m_sign =         m_item.t_new_transaction.m_sign;
-            current_item.t_new_transaction.m_src_acc_id =   m_item.t_new_transaction.m_src_acc_id;
-
-            *last_item = current_item;
+            *this_reg_array_item = this->a_reg_array [ i ];
+            *that_reg_array_item = inst_b.a_reg_array [ i ];
             
-            if ( last_item == NULL )
-                *m_head_item = current_item;
-            
-            if ( m_item.m_next == NULL )
+            this_reg_array_item->a_trans_cnt = that_reg_array_item->a_trans_cnt;
+            this_reg_array_item->a_trans_size = that_reg_array_item->a_trans_size;
+            strcpy ( this_reg_array_item->m_acc_id, that_reg_array_item->m_acc_id );
+            this_reg_array_item->m_actual_balance = that_reg_array_item->m_actual_balance;
+            this_reg_array_item->m_init_balance = that_reg_array_item->m_init_balance;
+
+            this->a_reg_array [ i ].a_trans_array = new T_Transaction [ inst_b.a_reg_array [ i ].a_trans_size ];
+            for ( unsigned int k = 0; k < inst_b.a_reg_array [ i ].a_trans_size; k++ )
             {
-                *m_tail_item = current_item;
-                break;
+                *this_trans_array_item = this->a_reg_array [ i ].a_trans_array [ k ];
+                *that_trans_array_item = inst_b.a_reg_array [ i ].a_trans_array [ k ];
+
+                this_trans_array_item->m_cash_amount = that_trans_array_item->m_cash_amount;
+                strcpy ( this_trans_array_item->m_src_acc_id, that_trans_array_item->m_src_acc_id );
+                strcpy ( this_trans_array_item->m_dest_acc_id, that_trans_array_item->m_dest_acc_id );
+                strcpy ( this_trans_array_item->m_sign, that_trans_array_item->m_sign );
             }
         }
-        inst_b.m_head_item = m_head_item;
-        inst_b.m_tail_item = m_tail_item;
-        return inst_b;
+        return *this; // CBank instance
     }
   
     bool NewAccount ( const char * accID,
         int initialBalance )
     {
-        T_Complete tail_item = *m_tail_item;
+        T_Register account;
 
-        m_item = *m_head_item;
-        while ( m_item.m_next != NULL )
+        for ( unsigned int i = 0; i < m_item_cnt; i++ )
         {
-            if ( m_item.t_new_account.m_acc_id == accID )
+            if ( accID == a_reg_array [ i ].m_acc_id )
                 return false;
         }
+
+        account.m_acc_id = new char [ strlen ( accID + 1 ) ];
+        strcpy ( account.m_acc_id, accID );
+        account.m_init_balance = initialBalance;
+        account.m_actual_balance = initialBalance;
+
+        if ( m_item_cnt >= m_reg_size )
+            array_realloc ( a_reg_array, m_reg_size );
+        
+        account.a_trans_cnt = 0;
+        account.a_trans_size = 10;
+        account.a_trans_array = new T_Transaction [ account.a_trans_size ];
+
+        a_reg_array [ m_item_cnt ] = account;
+        m_item_cnt++;
         return true;
     }
 
@@ -83,34 +145,61 @@ public:
         int amount,
         const char * signature )
     {
-        m_item.t_new_transaction.m_src_acc_id = debAccID; // const char* -> char*
-        m_item.t_new_transaction.m_dest_acc_id = credAccID;
-        m_item.t_new_transaction.m_cash_amount = amount;
-        m_item.t_new_transaction.m_sign = signature;
+        T_Register * src_account, *dest_account;
+        T_Transaction trans_item;
+        bool srcAcc_found = false, destAcc_found = false;
+        unsigned int srcAcc_position, destAcc_position;
 
-        //todo
+        transaction_check (
+            srcAcc_found, destAcc_found, srcAcc_position, destAcc_position, debAccID, credAccID );
 
+        if ( !srcAcc_found 
+            || !destAcc_found 
+            || srcAcc_position == destAcc_position ) // transfering money itself 
+            return false;
+
+        *src_account = ( a_reg_array [ srcAcc_position ] );
+        *dest_account = ( a_reg_array [ destAcc_position ] );
+        
+        if ( src_account->a_trans_size <= src_account->a_trans_cnt )
+            array_realloc ( src_account->a_trans_array, src_account->a_trans_size ); // realloc
+        if ( dest_account->a_trans_size <= dest_account->a_trans_cnt )
+            array_realloc ( dest_account->a_trans_array, dest_account->a_trans_size );
+
+        transaction_join ( 
+            trans_item, src_account, dest_account, debAccID, credAccID, amount, signature );
+        
+        return true;
     }
     
-    bool TrimAccount ( const char * accID )
+    bool TrimAccount ( const char * accID ) // transactions delete, actual_balance = initial_balance
     {
-        
+        for ( unsigned int i = 0; i < m_item_cnt; i++ )
+        {
+            if ( this->a_reg_array [ i ].m_acc_id == accID )
+            {
+                delete [] this->a_reg_array [ i ].a_trans_array;
+                this->a_reg_array [ i ].a_trans_cnt = 0;
+                this->a_reg_array [ i ].a_trans_size = 10;
+                this->a_reg_array [ i ].a_trans_array = new T_Transaction [ 10 ];
+                this->a_reg_array [ i ].m_actual_balance = this->a_reg_array [ i ].m_init_balance;
+                return true;
+            }
+        }
+        return false;
     }
 
   // Account ( accID )
-    int & Balance ( void )
+    T_Register * Account ( const char * accID )
     {
 
+    }
 
-        return m_total;
+    friend ostream & operator << ( ostream &, T_Register * account )
+    {
+
     }
 private:
-    struct T_Register
-    {
-        char * m_acc_id;
-        int m_init_balance;
-    };
-
     struct T_Transaction
     {
         char * m_src_acc_id;
@@ -119,18 +208,104 @@ private:
         char * m_sign;
     };
 
-    struct T_Complete
+    struct T_Register
     {
-        T_Complete * m_last;
-        T_Complete * m_next;
-        T_Register t_new_account;
-        T_Transaction t_new_transaction;
+        char * m_acc_id;
+        int m_init_balance;
+        int m_actual_balance;
+        T_Transaction * a_trans_array;
+        unsigned int a_trans_size;
+        unsigned int a_trans_cnt;
     };
 
-    T_Complete m_item;
-    T_Complete * m_head_item;
-    T_Complete * m_tail_item;
-    int m_total;
+    T_Register * a_reg_array;
+    unsigned int m_item_cnt;
+    unsigned int m_reg_size;
+
+    // realloc
+    void array_realloc ( T_Register *& arr, unsigned int & arr_size ) // universal for T_Register && T_Transaction
+    {
+        T_Register * sup_array;
+        unsigned int sup_size = 2 * m_reg_size;
+        sup_array = new T_Register [ sup_size ];
+
+        for ( size_t i = 0; i < arr_size; i++ )
+        {
+            sup_array [ i ] = arr [ i ];
+        }
+        delete [] arr;
+        arr = sup_array;
+        return;
+    }
+
+    void array_realloc ( T_Transaction *& arr, unsigned int & arr_size ) // universal for T_Register && T_Transaction
+    {
+        T_Transaction * sup_array;
+        unsigned int sup_size = 2 * m_reg_size;
+        sup_array = new T_Transaction [ sup_size ];
+
+        for ( size_t i = 0; i < arr_size; i++ )
+        {
+            sup_array [ i ] = arr [ i ];
+        }
+        delete [] arr;
+        arr = sup_array;
+        return;
+    }
+
+    // transaction check if already inserted
+    void transaction_check ( bool & srcAcc_found,
+        bool & destAcc_found,
+        unsigned int & srcAcc_position, 
+        unsigned int & destAcc_position, 
+        const char *& debAccID,
+        const char *& credAccID )
+    {
+        for ( unsigned int i = 0; i < m_item_cnt; i++ )
+        {
+            if ( srcAcc_found && destAcc_found ) break;
+            if ( ( a_reg_array [ i ] ).m_acc_id == debAccID )
+            {
+                srcAcc_found = true;
+                srcAcc_position = i;
+            }
+            if ( ( a_reg_array [ i ] ).m_acc_id == credAccID )
+            {
+                destAcc_found = true;
+                destAcc_position = i;
+            }
+        }
+    }
+
+    // values join
+    void transaction_join ( T_Transaction & trans_item,
+        T_Register *& src_account,
+        T_Register *& dest_account,
+        const char * debAccID,
+        const char * credAccID,
+        int amount,
+        const char * signature )
+    {
+        strcpy ( trans_item.m_src_acc_id, debAccID );
+        strcpy ( trans_item.m_dest_acc_id, credAccID );
+        trans_item.m_cash_amount = amount;
+        strcpy ( trans_item.m_sign, signature );
+
+        src_account->a_trans_array [ src_account->a_trans_cnt ] = trans_item;
+        dest_account->a_trans_array [ dest_account->a_trans_cnt ] = trans_item;
+
+        src_account->m_actual_balance -= amount;
+        dest_account->m_actual_balance += amount;
+
+        src_account->a_trans_cnt++;
+        dest_account->a_trans_cnt++;
+    }
+
+    void account_sort ( const char * added_account )
+    {
+        //todo
+        return;
+    }
 };
 
 #ifndef __PROGTEST__
@@ -139,13 +314,15 @@ int main ( void )
   ostringstream os;
   char accCpy[100], debCpy[100], credCpy[100], signCpy[100];
   CBank x0;
-  /*assert ( x0 . NewAccount ( "123456", 1000 ) );
+
+  x0.Account("12345689")
+  assert ( x0 . NewAccount ( "123456", 1000 ) );
   assert ( x0 . NewAccount ( "987654", -500 ) );
   assert ( x0 . Transaction ( "123456", "987654", 300, "XAbG5uKz6E=" ) );
   assert ( x0 . Transaction ( "123456", "987654", 2890, "AbG5uKz6E=" ) );
   assert ( x0 . NewAccount ( "111111", 5000 ) );
   assert ( x0 . Transaction ( "111111", "987654", 290, "Okh6e+8rAiuT5=" ) );
-  assert ( x0 . Account ( "123456" ). Balance ( ) ==  -2190 );
+  /*assert ( x0 . Account ( "123456" ). Balance ( ) ==  -2190 );
   assert ( x0 . Account ( "987654" ). Balance ( ) ==  2980 );
   assert ( x0 . Account ( "111111" ). Balance ( ) ==  4710 );
   os . str ( "" );
