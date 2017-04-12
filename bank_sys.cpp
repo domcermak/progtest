@@ -16,7 +16,7 @@ public:
   // default constructor
     CBank ( void )
     {
-        m_reg_size = 100;
+        m_reg_size = 1;
         m_item_cnt = 0;
         a_reg_array = new T_Register [ m_reg_size ];
     }
@@ -30,8 +30,12 @@ public:
         
         for ( unsigned int i = 0; i < obj.m_item_cnt; i++ )
         {
-            T_Register * reg_this = this->a_reg_array [ i ];
-            T_Register * reg_obj = obj.a_reg_array [ i ];
+            T_Register * reg_this, *reg_obj;
+
+            reg_this = &( this->a_reg_array [ i ] );
+            reg_obj = &( obj.a_reg_array [ i ] );
+
+            reg_this->m_acc_id = new char [ strlen ( reg_obj->m_acc_id ) + 1 ];
 
             strcpy ( reg_this->m_acc_id, reg_obj->m_acc_id ); // string
             reg_this->m_init_balance = reg_obj->m_init_balance;
@@ -40,14 +44,16 @@ public:
             reg_this->a_trans_cnt = reg_obj->a_trans_cnt;
 
             reg_this->a_trans_array = new T_Transaction [ reg_obj->a_trans_size ];
-            for ( unsigned int k = 0; k < reg_obj->a_trans_cnt )
+            for ( unsigned int k = 0; k < reg_obj->a_trans_cnt; k++ )
             {
-                T_Transaction * trans_this = reg_this->a_trans_array [ k ];
-                T_Transaction * trans_obj = reg_obj->a_trans_array [ k ];
+                T_Transaction * trans_this, *trans_obj;
 
-                trans_this->m_src_acc_id = new char [ strlen ( trans_obj->m_src_acc_id ) ];
-                trans_this->m_dest_acc_id = new char [ strlen ( trans_obj->m_dest_acc_id ) ];
-                trans_this->m_sign = new char [ strlen ( trans_obj->m_sign ) ];
+                trans_this = &( reg_this->a_trans_array [ k ] );
+                trans_obj = &( reg_obj->a_trans_array [ k ] );
+
+                trans_this->m_src_acc_id = new char [ strlen ( trans_obj->m_src_acc_id ) + 1 ];
+                trans_this->m_dest_acc_id = new char [ strlen ( trans_obj->m_dest_acc_id ) + 1 ];
+                trans_this->m_sign = new char [ strlen ( trans_obj->m_sign ) + 1 ];
 
                 strcpy ( trans_this->m_src_acc_id, trans_obj->m_src_acc_id );
                 strcpy ( trans_this->m_dest_acc_id, trans_obj->m_dest_acc_id );
@@ -56,13 +62,13 @@ public:
             }
         }
     }
-
+    
   // destructor
-    ~CBank ( void )
+    /*~CBank ( void )
     {
-        for (unsigned int i = 0;i<this->m_item_cnt;i++ )
+        for ( unsigned int i = 0; i < this->m_item_cnt; i++ )
         {
-            for ( unsigned int k = 0; this->a_reg_array [ i ].a_trans_size; k++ )
+            for ( unsigned int k = 0; k < this->a_reg_array [ i ].a_trans_size; k++ )
             {
                 delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_src_acc_id;
                 delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_dest_acc_id;
@@ -72,44 +78,70 @@ public:
             delete [] this->a_reg_array [ i ].m_acc_id;
         }
         delete [] this->a_reg_array;
-    }
+    }*/
   
   // operator =
-    CBank operator = ( CBank inst_b )
+    CBank operator = ( CBank obj )
     {
-        CBank ret_obj;
-
-        this->a_reg_array = new T_Register [ inst_b.m_reg_size ];
-        this->m_item_cnt = inst_b.m_item_cnt;
-        this->m_reg_size = inst_b.m_reg_size;
-
-        for ( unsigned int i = 0; i < inst_b.m_reg_size; i++ )
+        if ( this == &obj )
+            return *this;
+        
+        // destruct
+        for ( unsigned int i = 0; i < this->m_item_cnt; i++ )
         {
-            T_Register * this_reg_array_item, *that_reg_array_item;
-            T_Transaction * this_trans_array_item, *that_trans_array_item;
-
-            *this_reg_array_item = this->a_reg_array [ i ];
-            *that_reg_array_item = inst_b.a_reg_array [ i ];
-            
-            this_reg_array_item->a_trans_cnt = that_reg_array_item->a_trans_cnt;
-            this_reg_array_item->a_trans_size = that_reg_array_item->a_trans_size;
-            strcpy ( this_reg_array_item->m_acc_id, that_reg_array_item->m_acc_id );
-            this_reg_array_item->m_actual_balance = that_reg_array_item->m_actual_balance;
-            this_reg_array_item->m_init_balance = that_reg_array_item->m_init_balance;
-
-            this->a_reg_array [ i ].a_trans_array = new T_Transaction [ inst_b.a_reg_array [ i ].a_trans_size ];
-            for ( unsigned int k = 0; k < inst_b.a_reg_array [ i ].a_trans_size; k++ )
+            if ( !( this->a_reg_array [ i ].a_trans_array ) )
             {
-                *this_trans_array_item = this->a_reg_array [ i ].a_trans_array [ k ];
-                *that_trans_array_item = inst_b.a_reg_array [ i ].a_trans_array [ k ];
+                for ( unsigned int k = 0; k < this->a_reg_array [ i ].a_trans_size; k++ )
+                {
+                    delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_src_acc_id;
+                    delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_dest_acc_id;
+                    delete [] this->a_reg_array [ i ].a_trans_array [ k ].m_sign;
+                }
+                delete [] this->a_reg_array [ i ].a_trans_array;
+            }
+            delete [] this->a_reg_array [ i ].m_acc_id;
+        }
+        delete [] this->a_reg_array;
+        
+        // construct
+        this->a_reg_array = new T_Register [ obj.m_reg_size ];
+        this->m_reg_size = obj.m_reg_size;
+        this->m_item_cnt = obj.m_item_cnt;
 
-                this_trans_array_item->m_cash_amount = that_trans_array_item->m_cash_amount;
-                strcpy ( this_trans_array_item->m_src_acc_id, that_trans_array_item->m_src_acc_id );
-                strcpy ( this_trans_array_item->m_dest_acc_id, that_trans_array_item->m_dest_acc_id );
-                strcpy ( this_trans_array_item->m_sign, that_trans_array_item->m_sign );
+        for ( unsigned int i = 0; i < obj.m_item_cnt; i++ )
+        {
+            T_Register * reg_this, *reg_obj;
+
+            reg_this = &( this->a_reg_array [ i ] );
+            reg_obj = &( obj.a_reg_array [ i ] );
+
+            reg_this->m_acc_id = new char [ strlen ( reg_obj->m_acc_id ) + 1 ];
+
+            strcpy ( reg_this->m_acc_id, reg_obj->m_acc_id ); // string
+            reg_this->m_init_balance = reg_obj->m_init_balance;
+            reg_this->m_actual_balance = reg_obj->m_actual_balance;
+            reg_this->a_trans_size = reg_obj->a_trans_size;
+            reg_this->a_trans_cnt = reg_obj->a_trans_cnt;
+
+            reg_this->a_trans_array = new T_Transaction [ reg_obj->a_trans_size ];
+            for ( unsigned int k = 0; k < reg_obj->a_trans_cnt; k++ )
+            {
+                T_Transaction * trans_this, *trans_obj;
+
+                trans_this = &( reg_this->a_trans_array [ k ] );
+                trans_obj = &( reg_obj->a_trans_array [ k ] );
+
+                trans_this->m_src_acc_id = new char [ strlen ( trans_obj->m_src_acc_id ) + 1 ];
+                trans_this->m_dest_acc_id = new char [ strlen ( trans_obj->m_dest_acc_id ) + 1 ];
+                trans_this->m_sign = new char [ strlen ( trans_obj->m_sign ) + 1 ];
+
+                strcpy ( trans_this->m_src_acc_id, trans_obj->m_src_acc_id );
+                strcpy ( trans_this->m_dest_acc_id, trans_obj->m_dest_acc_id );
+                strcpy ( trans_this->m_sign, trans_obj->m_sign );
+                trans_this->m_cash_amount = trans_obj->m_cash_amount;
             }
         }
-        return *this; // CBank instance
+        return *this;
     }
   
     bool NewAccount ( const char * accID,
@@ -119,11 +151,11 @@ public:
 
         for ( unsigned int i = 0; i < m_item_cnt; i++ )
         {
-            if ( accID == a_reg_array [ i ].m_acc_id )
+            if ( !strcmp ( accID, a_reg_array [ i ].m_acc_id ) ) // if equal
                 return false;
         }
 
-        account.m_acc_id = new char [ strlen ( accID + 1 ) ];
+        account.m_acc_id = new char [ strlen ( accID ) + 1 ];
         strcpy ( account.m_acc_id, accID );
         account.m_init_balance = initialBalance;
         account.m_actual_balance = initialBalance;
@@ -132,7 +164,7 @@ public:
             array_realloc ( a_reg_array, m_reg_size );
         
         account.a_trans_cnt = 0;
-        account.a_trans_size = 10;
+        account.a_trans_size = 1;
         account.a_trans_array = new T_Transaction [ account.a_trans_size ];
 
         a_reg_array [ m_item_cnt ] = account;
@@ -146,9 +178,8 @@ public:
         const char * signature )
     {
         T_Register * src_account, *dest_account;
-        T_Transaction trans_item;
         bool srcAcc_found = false, destAcc_found = false;
-        unsigned int srcAcc_position, destAcc_position;
+        unsigned int srcAcc_position = 0, destAcc_position = 0;
 
         transaction_check (
             srcAcc_found, destAcc_found, srcAcc_position, destAcc_position, debAccID, credAccID );
@@ -157,18 +188,17 @@ public:
             || !destAcc_found 
             || srcAcc_position == destAcc_position ) // transfering money itself 
             return false;
-
-        *src_account = ( a_reg_array [ srcAcc_position ] );
-        *dest_account = ( a_reg_array [ destAcc_position ] );
         
+        src_account = &( a_reg_array [ srcAcc_position ] );
+        dest_account = &( a_reg_array [ destAcc_position ] );
+
         if ( src_account->a_trans_size <= src_account->a_trans_cnt )
             array_realloc ( src_account->a_trans_array, src_account->a_trans_size ); // realloc
         if ( dest_account->a_trans_size <= dest_account->a_trans_cnt )
             array_realloc ( dest_account->a_trans_array, dest_account->a_trans_size );
 
         transaction_join ( 
-            trans_item, src_account, dest_account, debAccID, credAccID, amount, signature );
-        
+            src_account, dest_account, debAccID, credAccID, amount, signature );
         return true;
     }
     
@@ -176,30 +206,19 @@ public:
     {
         for ( unsigned int i = 0; i < m_item_cnt; i++ )
         {
-            if ( this->a_reg_array [ i ].m_acc_id == accID )
+            if ( !strcmp ( this->a_reg_array [ i ].m_acc_id, accID ) )
             {
                 delete [] this->a_reg_array [ i ].a_trans_array;
                 this->a_reg_array [ i ].a_trans_cnt = 0;
                 this->a_reg_array [ i ].a_trans_size = 10;
                 this->a_reg_array [ i ].a_trans_array = new T_Transaction [ 10 ];
-                this->a_reg_array [ i ].m_actual_balance = this->a_reg_array [ i ].m_init_balance;
+                this->a_reg_array [ i ].m_init_balance = this->a_reg_array [ i ].m_actual_balance;
                 return true;
             }
         }
         return false;
     }
 
-  // Account ( accID )
-    T_Register * Account ( const char * accID )
-    {
-
-    }
-
-    friend ostream & operator << ( ostream &, T_Register * account )
-    {
-
-    }
-private:
     struct T_Transaction
     {
         char * m_src_acc_id;
@@ -214,25 +233,72 @@ private:
         int m_init_balance;
         int m_actual_balance;
         T_Transaction * a_trans_array;
+        T_Register () :a_trans_array ( NULL ){ }
         unsigned int a_trans_size;
         unsigned int a_trans_cnt;
+        
+        int Balance ( void )
+        {
+           return m_actual_balance;
+        }
     };
+
+    // Account ( accID )
+    T_Register Account ( const char * accID )
+    {
+        for ( unsigned int i = 0; i < this->m_item_cnt; i++ )
+        {
+            if ( !strcmp ( accID, this->a_reg_array [ i ].m_acc_id ) )
+                return this->a_reg_array [ i ];
+        }
+        throw 20;
+    }
+
+    friend ostream & operator << ( ostream & os, T_Register account )
+    {
+        os << account.m_acc_id << ":" << endl;
+        os << "   " << account.m_init_balance << endl;
+        
+        for ( unsigned int i = 0; i < account.a_trans_cnt; i++ )
+        {
+            if ( !strcmp ( account.m_acc_id, account.a_trans_array [ i ].m_src_acc_id ) )
+            {
+                os << " - " << account.a_trans_array [ i ].m_cash_amount << ", ";
+                os << "to: " << account.a_trans_array [ i ].m_dest_acc_id << ", " << "sign: " << account.a_trans_array [ i ].m_sign << endl;
+                //account.m_actual_balance -= account.a_trans_array [ i ].m_cash_amount;
+            }
+
+            if ( !strcmp ( account.m_acc_id, account.a_trans_array [ i ].m_dest_acc_id ) )
+            {
+                os << " + " << account.a_trans_array [ i ].m_cash_amount << ", ";
+                os << "from: " << account.a_trans_array [ i ].m_src_acc_id << ", " << "sign: " << account.a_trans_array [ i ].m_sign << endl;
+                //account.m_actual_balance += account.a_trans_array [ i ].m_cash_amount;
+            }
+        }
+        os << " = " << account.m_actual_balance << endl;
+        return os;
+    }
 
     T_Register * a_reg_array;
     unsigned int m_item_cnt;
     unsigned int m_reg_size;
+private:
+    //T_Register * a_reg_array;
+    //unsigned int m_item_cnt;
+    //unsigned int m_reg_size;
 
     // realloc
     void array_realloc ( T_Register *& arr, unsigned int & arr_size ) // universal for T_Register && T_Transaction
     {
         T_Register * sup_array;
-        unsigned int sup_size = 2 * m_reg_size;
+        unsigned int sup_size = 2 * arr_size;
         sup_array = new T_Register [ sup_size ];
 
         for ( size_t i = 0; i < arr_size; i++ )
         {
             sup_array [ i ] = arr [ i ];
         }
+        arr_size = sup_size;
         delete [] arr;
         arr = sup_array;
         return;
@@ -241,13 +307,14 @@ private:
     void array_realloc ( T_Transaction *& arr, unsigned int & arr_size ) // universal for T_Register && T_Transaction
     {
         T_Transaction * sup_array;
-        unsigned int sup_size = 2 * m_reg_size;
+        unsigned int sup_size = 2 * arr_size;
         sup_array = new T_Transaction [ sup_size ];
 
         for ( size_t i = 0; i < arr_size; i++ )
         {
             sup_array [ i ] = arr [ i ];
         }
+        arr_size = sup_size;
         delete [] arr;
         arr = sup_array;
         return;
@@ -264,12 +331,12 @@ private:
         for ( unsigned int i = 0; i < m_item_cnt; i++ )
         {
             if ( srcAcc_found && destAcc_found ) break;
-            if ( ( a_reg_array [ i ] ).m_acc_id == debAccID )
+            if ( !strcmp ( a_reg_array [ i ].m_acc_id, debAccID ) )
             {
                 srcAcc_found = true;
                 srcAcc_position = i;
             }
-            if ( ( a_reg_array [ i ] ).m_acc_id == credAccID )
+            if ( !strcmp ( a_reg_array [ i ].m_acc_id, credAccID ) )
             {
                 destAcc_found = true;
                 destAcc_position = i;
@@ -278,14 +345,19 @@ private:
     }
 
     // values join
-    void transaction_join ( T_Transaction & trans_item,
-        T_Register *& src_account,
+    void transaction_join ( T_Register *& src_account,
         T_Register *& dest_account,
         const char * debAccID,
         const char * credAccID,
         int amount,
         const char * signature )
     {
+        T_Transaction trans_item;
+
+        trans_item.m_src_acc_id = new char [ strlen ( debAccID ) + 1 ];
+        trans_item.m_dest_acc_id = new char [ strlen ( credAccID ) + 1 ];
+        trans_item.m_sign = new char [ strlen ( signature ) + 1 ];
+
         strcpy ( trans_item.m_src_acc_id, debAccID );
         strcpy ( trans_item.m_dest_acc_id, credAccID );
         trans_item.m_cash_amount = amount;
@@ -300,12 +372,6 @@ private:
         src_account->a_trans_cnt++;
         dest_account->a_trans_cnt++;
     }
-
-    void account_sort ( const char * added_account )
-    {
-        //todo
-        return;
-    }
 };
 
 #ifndef __PROGTEST__
@@ -315,17 +381,21 @@ int main ( void )
   char accCpy[100], debCpy[100], credCpy[100], signCpy[100];
   CBank x0;
 
-  x0.Account("12345689")
   assert ( x0 . NewAccount ( "123456", 1000 ) );
   assert ( x0 . NewAccount ( "987654", -500 ) );
+  assert ( !( x0.NewAccount ( "987654", -500 ) ) );
   assert ( x0 . Transaction ( "123456", "987654", 300, "XAbG5uKz6E=" ) );
   assert ( x0 . Transaction ( "123456", "987654", 2890, "AbG5uKz6E=" ) );
   assert ( x0 . NewAccount ( "111111", 5000 ) );
+  /*for ( int i = 0; i < x0.m_item_cnt; i++ )
+      cout << x0.a_reg_array [ i ].m_acc_id << endl;*/
   assert ( x0 . Transaction ( "111111", "987654", 290, "Okh6e+8rAiuT5=" ) );
-  /*assert ( x0 . Account ( "123456" ). Balance ( ) ==  -2190 );
+  assert ( x0 . Account ( "123456" ). Balance ( ) ==  -2190 );
   assert ( x0 . Account ( "987654" ). Balance ( ) ==  2980 );
   assert ( x0 . Account ( "111111" ). Balance ( ) ==  4710 );
   os . str ( "" );
+  //cout << x0.Account ( "123456" );
+  //cout << "123456:\n   1000\n - 300, to: 987654, sign: XAbG5uKz6E=\n - 2890, to: 987654, sign: AbG5uKz6E=\n = -2190\n" << endl;
   os << x0 . Account ( "123456" );
   assert ( ! strcmp ( os . str () . c_str (), "123456:\n   1000\n - 300, to: 987654, sign: XAbG5uKz6E=\n - 2890, to: 987654, sign: AbG5uKz6E=\n = -2190\n" ) );
   os . str ( "" );
@@ -338,6 +408,7 @@ int main ( void )
   assert ( x0 . Transaction ( "111111", "987654", 123, "asdf78wrnASDT3W" ) );
   os . str ( "" );
   os << x0 . Account ( "987654" );
+
   assert ( ! strcmp ( os . str () . c_str (), "987654:\n   2980\n + 123, from: 111111, sign: asdf78wrnASDT3W\n = 3103\n" ) );
 
   CBank x2;
@@ -462,8 +533,8 @@ int main ( void )
   assert ( ! strcmp ( os . str () . c_str (), "111111:\n   -1802\n = -1802\n" ) );
   os . str ( "" );
   os << x9 . Account ( "111111" );
-  assert ( ! strcmp ( os . str () . c_str (), "111111:\n   5000\n - 2890, to: 987654, sign: Okh6e+8rAiuT5=\n - 789, to: 987654, sign: SGDFTYE3sdfsd3W\n = 1321\n" ) );*/
-
+  assert ( ! strcmp ( os . str () . c_str (), "111111:\n   5000\n - 2890, to: 987654, sign: Okh6e+8rAiuT5=\n - 789, to: 987654, sign: SGDFTYE3sdfsd3W\n = 1321\n" ) );
+  
   return 0;
 }
 #endif /* __PROGTEST__ */
