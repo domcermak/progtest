@@ -19,21 +19,23 @@ using namespace std;
 class CVATRegister
 {
 public:
-    CVATRegister ( void ) : m_reg_size ( 100 ), m_reg_items_cnt ( 0 )
+    CVATRegister ( void ) : m_register_item_cnt ( 0 )
     {
-        m_reg_array = new T_Registry [ m_reg_size ];
     }
 
     bool RegisterCompany ( const string & name )
     {
-        if ( check_if_inserted ( name.c_str () ) )
+        T_Register member;
+        if ( isMember ( name ) )
             return false;
-        if ( m_reg_items_cnt >= m_reg_size )
-            array_realloc ( m_reg_array, m_reg_size );
-        
-        strcpy ( this->m_reg_array [ m_reg_items_cnt ].m_original, name.c_str () );
-        m_reg_items_cnt++;
-        qsort_name ( m_reg_array, m_reg_items_cnt );
+        member.m_original_string = name;
+        member.m_transformed_string = stringTransform ( name );
+
+        //testf ( member.m_transformed_string );
+        m_register_array.push_back ( member );
+        m_register_item_cnt++;
+        qSort_name ( m_register_array, 0, m_register_item_cnt - 1 );
+        testf ( "finished" );
         return true;
     }
     /*
@@ -44,162 +46,186 @@ public:
     list<CInvoice> Unmatched ( const string & company,
     const CSortOpt & sortBy ) const;
     */
+    
+    // testing
+    void print_sorted ( void )
+    {
+        for ( int i = 0; i < m_register_item_cnt; i++ )
+        {
+            cout << i + 1 << ".  " << m_register_array [ i ].m_original_string << "  |  "
+                << m_register_array [ i ].m_transformed_string << endl << endl;
+        }
+    }
+
+    void testf ( void )
+    {
+        cout << "Test alert!" << endl;
+    }
+
+    void testf ( int i )
+    {
+        cout << "Test alert " << i << " !" << endl;
+    }
+
+    void testf ( unsigned int i )
+    {
+        cout << "Test alert " << i << " !" << endl;
+    }
+
+    void testf ( string str )
+    {
+        cout << str << endl;
+    }
 private:
-    struct T_Issued
+    struct T_Register
     {
-
+        string m_original_string; // from input
+        string m_transformed_string; // to_lower + spaces reduced
+        ~T_Register ( void )
+        {
+            m_original_string.clear ();
+            m_transformed_string.clear ();
+        }
     };
 
-    struct T_Registry
-    {
-        char * m_original; // original input
-        char * reduced; // prepared to search
+    vector <T_Register> m_register_array;
+    int m_register_item_cnt; // -1 value enabled
 
-        T_Issued * m_iss_array; // issued
-        unsigned int m_iss_items_cnt;
-        unsigned int m_iss_size;
-    };
-
-    T_Registry * m_reg_array;
-    unsigned int m_reg_size;
-    unsigned int m_reg_items_cnt;
-
-    // realloc ---------------------------------------------------------------------------
-    void array_realloc ( T_Registry *& arr, unsigned int & arr_size )
-    {
-        T_Registry * tmp_array;
-        unsigned int tmp_size = 2 * arr_size;
-        for ( unsigned int i = 0; i < arr_size; i++ )
-        {
-            tmp_array [ i ] = arr [ i ];
-        }
-        arr_size = tmp_size;
-        delete arr;
-        arr = tmp_array;
-    }
-
-    void array_realloc ( T_Issued *& arr, unsigned int & arr_size )
-    {
-        T_Issued * tmp_array;
-        unsigned int tmp_size = 2 * arr_size;
-        for ( unsigned int i = 0; i < arr_size; i++ )
-        {
-            tmp_array [ i ] = arr [ i ];
-        }
-        arr_size = tmp_size;
-        delete arr;
-        arr = tmp_array;
-    }
-    // binary search / sort -----------------------------------------------------
-    // returns -1 if !found
-    int qsearch_name ( char * name_to_find, 
-                       unsigned int from_,
-                       unsigned int to_ ) // to_ = items_cnt - 1
-    {
-        int ret_val;
-        unsigned int search_pos = ( ( to_ - from_ ) + 1 ) / 2; // size / 2
-
-        ret_val = strcmp ( name_to_find, this->m_reg_array [ search_pos ].reduced );
-        if ( !ret_val )
-            return search_pos;
-        if ( ( ret_val > 0 || ret_val < 0 ) && to_ == from_ )
-            return -1;
-        
-         return ( ret_val > 0 )
-            ? qsearch_name ( name_to_find, search_pos + 1, to_ )
-            : qsearch_name ( name_to_find, from_, search_pos - 1 );
-    } 
-
-    void qsort_name ( T_Registry *& arr, unsigned int size )
-    {
-        unsigned int pivot = size - 2;
-
-        // todo
-    }
-
-    //---------------------------------------------------------------------------
-    bool is_upper_alpha ( char c )
+    //----------------------------------------------------------------------
+    bool isUpperAlpha ( char c )
     {
         return ( c >= 'A' && c <= 'Z' ) ? true : false;
     }
 
-    bool is_space ( char c )
+    bool isSpace ( char c )
     {
         return ( c == ' ' ) ? true : false;
     }
-    
-    void to_lower_case (  char *& str )
+
+    void toLower ( char & c )
     {
-        for ( unsigned int i = 0; i < strlen ( str ); i++ )
-            if ( is_upper_alpha ( str [ i ] ) )
-                str [ i ] += 'a' - 'A';
+        unsigned int diff = 'a' - 'A';
+        c += diff;
     }
 
-    void spaces_reduction ( char *& str, unsigned int & size )
+    //-------------------------------------------------------------------------
+    void qSort_name ( vector<T_Register> & arr, int left, int right ) // arr, 0, -1
     {
-        unsigned int i = 0;
-        char * tmp;
+        int pivot = ( m_register_item_cnt - 1 ) / 2;
+        int head = left, tail = right;
 
-        while ( is_space ( str [ i ] ) )
-            i++;
-
-        // spaces before
-        if ( !i )
+        // partition
+        while ( head <= tail )
         {
-            size -= i;
-            tmp = new char [ size ];
-            for ( unsigned int k = i; k < size; k++ )
-                tmp [ k - i ] = str [ k ];
-            delete str;
-            str = tmp;
-        }
-
-        // spaces between
-        for ( unsigned int k = 0; k < size; k++ )
-        {
-            if ( is_space ( str [ k ] ) 
-                && is_space ( str [ k + 1 ] ) )
+            //cout << "head: " << head << endl << "tail: "<< tail << endl;
+            while ( 0 > strcmp ( arr [ head ].m_transformed_string.c_str (), arr [ pivot ].m_transformed_string.c_str () ) )
+                head++;
+            while ( 0 < strcmp ( arr [ tail ].m_transformed_string.c_str (), arr [ pivot ].m_transformed_string.c_str () ) )
+                tail--;
+            if ( head <= left )
             {
-                char * tmp = new char [ size-- ];
-                for ( unsigned int f = 0; f < size; f++ )
-                    tmp [ f ] = ( f < k ) ? str [ f ] : str [ f + 1 ];
-                delete str;
-                str = tmp;
+                T_Register tmp;
+                tmp = arr [ head ];
+                arr [ head ] = arr [ tail ];
+                arr [ tail ] = tmp;
+                head++;
+                tail--;
             }
         }
+        // recursion
+        if ( left < head )  qSort_name ( arr, left, tail );
+        if ( right > tail ) qSort_name ( arr, head, right );
+    }
+    
+    int binarySearch ( string str, int head, int tail )
+    {
+        int ret_val, tip_point = ( head + tail ) / 2;
+        
+        if ( head >= tail ) return -1;
+        ret_val = strcmp ( str.c_str (), m_register_array [ tip_point ].m_transformed_string.c_str () );
+        if ( ret_val > 0 ) return binarySearch ( str, head, tip_point - 1 );
+        else if ( ret_val < 0 ) return binarySearch ( str, tip_point + 1, tail );
+        else return tip_point; // found
+    }
+    
+    string stringTransform ( string name ) // space reduction, case to lower
+    {
+        char * tmp, *help;
 
-        // spaces after
-        if ( is_space ( str [ size - 1 ] ) )
+        tmp = new char [ name.size () ];
+        strcpy ( tmp, name.c_str () );
+        
+        for ( unsigned int i = 0; i < name.length (); i++ ) // char to lower
+            if ( isUpperAlpha ( tmp [ i ] ) ) toLower ( tmp [ i ] );
+        
+        while ( isSpace ( tmp [ 0 ] ) ) // head
         {
-            char * tmp = new char [ size-- ];
-            for ( unsigned int k = 0; k < size; k++ )
-                tmp [ k ] = str [ k ];
-            delete str;
-            str = tmp;
+            int len = strlen ( tmp ) + 1;
+            help = new char [ len ];
+            strcpy ( help, tmp );
+            delete tmp;
+            tmp = new char [ len - 1 ];
+            for ( int i = 0; i < len; i++ )
+                tmp [ i ] = help [ i + 1 ];
+            delete help;
         }
+
+        for ( int i = 0; i < ( int ) name.length () - 1; i++ ) // middle
+        {
+            if ( isSpace ( name.c_str () [ i ] ) && isSpace ( name.c_str () [ i + 1 ] ) )
+            {
+                int len = strlen ( tmp ) + 1;
+
+                help = new char [ len ];
+                strcpy ( help, tmp );
+                delete tmp;
+                tmp = new char [ len - 1 ]; // length decrease
+                /*for ( int k = 0; k <= i; k++ )
+                    tmp [ k ] = help [ k ];*/
+                for ( int k = i + 1; k < len; k++ )
+                    tmp [ k ] = help [ k + 1 ];
+                delete help;
+            }
+        }
+        testf ( tmp );
+        while ( isSpace ( tmp [ strlen ( tmp ) ] ) ) // tail
+        {
+            int len = strlen ( tmp ) + 1;
+            help = new char [ len ];
+            strcpy ( help, tmp );
+            delete tmp;
+            tmp = new char [ len - 1 ];
+            for ( int i = 0; i < len - 1; i++ )
+                tmp [ i ] = help [ i ];
+            delete help;
+        }
+        //testf ( tmp );
+
+        name.copy ( tmp, strlen ( tmp ) + 1 );
+        return name;
     }
 
-    bool check_if_inserted ( const char * str )
-        // case sensitivity : disabled
-        // more spaces : reduce
+    bool isMember ( string name )
     {
-        char * non_const_str;
-        unsigned int size = strlen ( str );
+        int val;
 
-        non_const_str = new char [ size ];
-        strcpy ( non_const_str, str );
-        to_lower_case ( non_const_str );
-        spaces_reduction ( non_const_str, size );
-        
-        if ( -1 != qsearch_name ( non_const_str, 0, this->m_reg_items_cnt - 1 ) )
-            return true;
-
-        strcpy ( this->m_reg_array [ m_reg_items_cnt ].reduced, non_const_str );
-        return false;
+        name = stringTransform ( name );
+        val = binarySearch ( name, 0, m_register_item_cnt - 1 );
+        return ( val >= 0 ) ? true : false;
     }
 };
 
 int main ( void )
 {
+    CVATRegister r;
+    //assert ( r.RegisterCompany ( "first Company" ) );
+    assert ( r.RegisterCompany ( "         Second     Company        " ) );
+
+    //r.print_sorted ();
+    
+    //assert ( r.RegisterCompany ( "ThirdCompany, Ltd." ) );
+    //assert ( r.RegisterCompany ( "Third Company, Ltd." ) );
+    //assert ( !r.RegisterCompany ( "Third Company, Ltd." ) );
+    //assert ( !r.RegisterCompany ( " Third  Company,  Ltd.  " ) );
     return 0;
 }
