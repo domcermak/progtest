@@ -44,11 +44,11 @@ public:
     // AddMatch
     CContest & AddMatch ( const string & contestant1, const string & contestant2, const _M & result )
     {
-        for ( int i = 0; i < v_matchList.size (); i++ )
+        for ( unsigned int i = 0; i < v_matchList.size (); i++ )
         {
             if ( ( v_matchList [ i ].m_contestant1 == contestant1 && v_matchList [ i ].m_contestant2 == contestant2 )
                 || ( v_matchList [ i ].m_contestant1 == contestant2 && v_matchList [ i ].m_contestant2 == contestant1 ) )
-                throw new DuplicateMatchException ();
+                throw DuplicateMatchException ();
         }
         v_matchList.push_back ( C_Match ( contestant1, contestant2, result ) );
         return *this;
@@ -57,10 +57,11 @@ public:
     template <typename T>
     bool IsOrdered ( T comparator ) const
     {
-        for ( int i = 0; i < v_matchList.size (); i++ )
+        v_pointList.clear ();
+        for ( unsigned int i = 0; i < v_matchList.size (); i++ )
         {
             int found1 = -1, found2 = -1;
-            for ( int k = 0; k < v_pointList.size (); k++ )
+            for ( unsigned int k = 0; k < v_pointList.size (); k++ )
             {
                 if ( v_matchList [ i ].m_contestant1 == v_pointList [ k ].m_name )
                     found1 = k;
@@ -80,39 +81,27 @@ public:
             if ( !comparator ( v_matchList [ i ].m_result ) )
                 return false;
             else if ( comparator ( v_matchList [ i ].m_result ) > 0 )
-                v_pointList [ found1 ].m_loosers.push_back ( found2 );
+                v_pointList [ found1 ].m_losers.push_back ( found2 );
             else if ( comparator ( v_matchList [ i ].m_result ) < 0 )
-                v_pointList [ found2 ].m_loosers.push_back ( found1 );
+                v_pointList [ found2 ].m_losers.push_back ( found1 );
         }
 
-        /*for ( int i = 0; i < v_pointList.size (); i++ )
+        for ( unsigned int i = 0; i < v_pointList.size (); i++ )
         {
             if ( !Add_points ( i ) ) return false;
-            for ( int k = 0; k < v_pointList.size (); k++ )
-                if ( v_pointList [ k ].m_state == 1 )
+            for ( unsigned int k = 0; k < v_pointList.size (); k++ )
+                if ( v_pointList [ k ].m_statement == 1 )
                 {
-                    v_pointList [ k ].m_points++;
-                    v_pointList [ k ].m_state = -1;
+                    v_pointList [ i ].m_points++;
+                    v_pointList [ k ].m_statement = -1;
                 }
-        }*/
-
-        // print
-        for ( int i = 0; i < v_pointList.size (); i++ )
-        {
-            cout << v_pointList [ i ].m_name << " : ";
-            for ( int k = 0; k < v_pointList [ i ].m_loosers.size (); k++ )
-            {
-                cout << v_pointList [ v_pointList [ i ].m_loosers [ k ] ].m_name << ", ";
-            }
-            cout << endl;
         }
-
-        for ( int i = 0; i < v_pointList.size (); i++ )
-            for ( int k = 0; k < v_pointList.size () - i - 1; k++ )
+        
+        for ( unsigned int i = 0; i < v_pointList.size (); i++ )
+            for ( unsigned int k = i + 1 ; k < v_pointList.size (); k++ )
             {
                 C_Points tmp;
-                if ( v_pointList [ i ].m_points == v_pointList [ k ].m_points )
-                    return false;
+                if ( v_pointList [ i ].m_points == v_pointList [ k ].m_points && i != k ) return false;
                 if ( v_pointList [ i ].m_points < v_pointList [ k ].m_points )
                 {
                     tmp = v_pointList [ i ];
@@ -120,45 +109,40 @@ public:
                     v_pointList [ k ] = tmp;
                 }
             }
+
+        for ( unsigned int i = 0; i < v_pointList.size () - 1; i++ )
+            if ( v_pointList [ i ].m_points == v_pointList [ i + 1 ].m_points ) return false;
         return true;
     }
     // Results ( comparator )
     template <typename T>
-    void Results ( T comparator )
+    list<string> Results ( T comparator ) const
     {
-        list <string> li;
+        list<string> li;
+        if ( IsOrdered ( comparator ) )
+            for ( unsigned int i = 0; i < v_pointList.size (); i++ )
+                li.push_back ( v_pointList [ i ].m_name );
+        else
+            throw OrderingDoesNotExistException ();
+        return li;
     }
 private:
     struct C_Points
     {
         C_Points ( void ) { }
-        C_Points ( string name ) : m_name ( name ), m_points ( 0 ), m_state ( -1 ) { }
+        C_Points ( string name ) : m_name ( name ), m_points ( 0 ), m_statement ( -1 ) { }
+        
+        // variables
+        vector <int> m_losers;
+        string m_name;
+        int m_points;
+        int m_statement; // -1 = not visited, 0 = active, 1 = visited
+        
         ~C_Points ( void )
         {
             m_name.clear ();
-            m_loosers.clear ();
+            m_losers.clear ();
         }
-        C_Points & operator = ( C_Points & member )
-        {
-            C_Points ret;
-            
-            ret.m_loosers.resize ( member.m_loosers.size () );
-            for ( int i = 0; i < member.m_loosers.size (); i++ )
-                ret.m_loosers [ i ] = member.m_loosers [ i ];
-
-            ret.m_name = new char [ member.m_name.size() ];
-            ret.m_name.copy ( member.m_name.c_str (), member.m_name.size () );
-
-            ret.m_points = member.m_points;
-            ret.m_state = member.m_state;
-
-            return ret;
-        }
-
-        vector <int> m_loosers;
-        string m_name;
-        int m_points;
-        int m_state; // -1 = not visited, 0 = active, 1 = visited
     };
 
     struct C_Match
@@ -179,18 +163,18 @@ private:
     mutable vector <C_Points> v_pointList;
 
     //------------------------------------------------------------------------------
-    bool Add_points ( int & i ) const
+    bool Add_points ( const int i ) const
     {
         C_Points & member = v_pointList [ i ];
 
-        if ( !member.m_state )
+        if ( !member.m_statement )
             return false;
-        if ( member.m_state == 1 )
+        if ( member.m_statement == 1 )
             return true;
-        member.m_state = 0;
-        for ( int k = 0; k < member.m_loosers.size (); k++ )
-            if ( !Add_points ( member.m_loosers [ k ] ) ) return false;
-        member.m_state = 1;
+        member.m_statement = 0;
+        for ( unsigned int k = 0; k < member.m_losers.size (); k++ )
+            if ( !Add_points ( member.m_losers [ k ] ) ) return false;
+        member.m_statement = 1;
         return true;
     }
 };
@@ -242,7 +226,7 @@ int                main                                    ( void )
     
   
   assert ( ! x . IsOrdered ( HigherScore ) );
-  /*try
+  try
   {
     list<string> res = x . Results ( HigherScore );
     assert ( "Exception missing!" == NULL );
@@ -254,11 +238,11 @@ int                main                                    ( void )
   {
     assert ( "Invalid exception thrown!" == NULL );
   }
-  */
+  
   x . AddMatch ( "PHP", "Pascal", CMatch ( 3, 6 ) ); 
 
   assert ( x . IsOrdered ( HigherScore ) );
-  /*try
+  try
   {
     list<string> res = x . Results ( HigherScore );
     assert ( ( res == list<string>{ "C++", "Java", "Pascal", "PHP", "Basic" } ) );
@@ -370,7 +354,7 @@ int                main                                    ( void )
   catch ( ... )
   {
     assert ( "Invalid exception thrown!" == NULL );
-  }*/
+  }
   return 0;
 }
 #endif /* __PROGTEST__ */
