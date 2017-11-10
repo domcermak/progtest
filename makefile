@@ -11,6 +11,6 @@ compile: $(DIR)/main.o $(DIR)/table.o $(DIR)/language.o $(DIR)/file_save.o $(DIR
 run: 
 	./chess
 obj_clean:
-	rm -f $(DIR)/*.o chess
+	rm -rf $(DIR)/*.o chess
 data_clean:
-	rm -f database/*.chess
+	rm -rf database/*.chess
