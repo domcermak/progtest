@@ -43,8 +43,8 @@ int main ( int argc, char ** argv )
 //        const TText txt = lang.get_pack ().m_text_list;
 
         ( table.on_move () ) 
-            ? CNext_turn ( &table).print ()
-            : CNext_turn ( &table).print ();
+            ? CNext_turn ( &table).print ("white")
+            : CNext_turn ( &table).print ("black");
 
         try
         { 
