@@ -1,0 +1,3 @@
+Map size:
+Price map:
+Invalid input.
