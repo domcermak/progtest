@@ -2,12 +2,14 @@
 #	This tester is created for unit testing of c or cpp programs by Dominik Čermák
 #	
 #	It is created to accept exactly 3 arguments
-#	./tester.sh [option] [file] [directory]
+#	./tester.sh [options] [file] [directory]
 #
 #	Options:
-#		-c	Uses gcc -std=c99 compiler
+#		-c		Uses gcc -std=c99 compiler
 #		
-#		-cpp	Uses g++ -std=c++11 compiler
+#		-cpp		Uses g++ -std=c++11 compiler
+#
+#		####--continue	Continue testing even if test failed      not implemented!!!!
 #
 #
 #	File:
@@ -34,10 +36,10 @@ elif [ $1 != "-c" -a $1 != "-cpp" ]; then
 	echo -e "ERROR: Invalid type of the first argument\nExpected -c or -cpp\n"
 	exit 1
 elif [ ! -f "$2" ]; then
-	echo -e "ERROR: Invalid type of the second argument\nExpected valid *.c or *.cpp file\n"
+	echo -e "ERROR: Invalid type of the third argument\nExpected valid *.c or *.cpp file\n"
 	exit 2
 elif [ ! -d "$3" ]; then 
-	echo -e "ERROR: Invalid type of the third argument\nExpected directory where id directory \"sample\" with unit test files\n"
+	echo -e "ERROR: Invalid type of the fourth argument\nExpected directory where id directory \"sample\" with unit test files\n"
 	exit 2
 fi
 
@@ -72,7 +74,6 @@ do
 	then
 		echo -e "\nError test $i!\nInput data:\n$(cat $inFile)";
 		echo -e "\n$TM\n";
-		exit 4;
 	fi
 done
 

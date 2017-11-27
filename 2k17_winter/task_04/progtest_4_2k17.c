@@ -28,11 +28,26 @@ typedef struct {
 //  @param eof Is true when EOF occur
 //
 typedef struct {
-    char * keyname;
+    char keyname [10];
     int investment;
     bool eof;
 } request;
 
+//
+//  List of parameters, that need to be printed when 'list' request is called
+//  @param w Width
+//  @param h Height
+//  @param x X value of left top corner
+//  @param y Y value of left top corner
+//  @param price Summary price of fields
+//
+typedef struct {
+    int w;
+    int h;
+    int x;
+    int y;
+    int price;
+} list;
 
 //
 //  Wrapped result values of count request
@@ -42,25 +57,8 @@ typedef struct {
 typedef struct {
     int count;
     int maxSize;
+    list * listed;
 } countRequest;
-
-
-#ifndef __PROGTEST__
-//
-//  Print formated values of map to stdout
-//  @param myMap Map containing values
-//
-void print (const map * myMap) {
-    printf("Size: %d x %d\nValues:\n\n", myMap->length, myMap->width);
-    for (size_t i = 0; i < myMap->length; i++) {
-        for (size_t k = 0; k < myMap->width; k++) {
-            printf("%d ", myMap->fieldPrice[i][k]);
-        }
-        printf("\n");
-    }
-}
-#endif // __PROGTEST__
-
 
 //
 //Print error message and quit program
@@ -93,9 +91,9 @@ static void loadMapSize (map * myMap) {
 //
 static void loadMapValues (map * myMap) {
     printf("Cenova mapa:\n");
-    myMap->fieldPrice = malloc(myMap->length * sizeof(int*));
+    myMap->fieldPrice = (int**) malloc(myMap->length * sizeof(int*));
     for (int i = 0; i < myMap->length; i++) {
-        myMap->fieldPrice[i] = malloc(myMap->width * sizeof(int));
+        myMap->fieldPrice[i] = (int*) malloc(myMap->width * sizeof(int));
         for (int k = 0; k < myMap->width; k++) {
             int n, **prices = myMap->fieldPrice;
             
@@ -111,23 +109,24 @@ static void loadMapValues (map * myMap) {
 //  @return Command struct with information about command and investment
 //
 static request loadRequest (void) {
-    request result = {NULL, 0, false};
-    char * req = malloc(10 * sizeof(char));
+    request result = {"0", 0, false};
+    char req [10];
     int n, ref;
     
     ref = scanf("%9s %d", req, &n);
-    if (n < 1)
+    if (n < 1) {
         wrongInput();
+    }
     if (ref == EOF) {
         result.eof = true;
-        
         return result;
     }
-    else if (ref != 2)
+    else if (ref != 2) {
         wrongInput();
+    }
     
     result.investment = n;
-    result.keyname = req;
+    strcpy(result.keyname, req);
     result.eof = false;
     
     return result;
@@ -139,7 +138,9 @@ static request loadRequest (void) {
 //  @param investment Valid integer value of investment
 //
 static countRequest countRequestCalc(const map * myMap, const int investment) {
-    countRequest result = {0, 0};
+    countRequest result = {0, 0, NULL};
+    list * myList = (list*) malloc(sizeof(list));
+    int listSize = 1;
     int cnt = 0;
     int maxReachedSize = 0;
     
@@ -149,10 +150,29 @@ static countRequest countRequestCalc(const map * myMap, const int investment) {
             if (myMap->fieldPrice[i][k] <= investment) {
                 int mySize = i * k;
                 
-                if (maxReachedSize == mySize) cnt++;
+                if (maxReachedSize == mySize) {
+                    cnt++;
+                    if (cnt > listSize) {
+                        listSize *= 2;
+                        myList = (list*) realloc(myList, listSize * sizeof(list));
+                    }
+                    myList[cnt - 1].w = i;
+                    myList[cnt - 1].h = k;
+                    myList[cnt - 1].x = 0;
+                    myList[cnt - 1].y = 0;
+                    myList[cnt - 1].price = myMap->fieldPrice[i][k];
+                }
                 else if (mySize > maxReachedSize) {
                     cnt = 1;
                     maxReachedSize = mySize;
+                    free(myList);
+                    myList = (list*) malloc(sizeof(list));
+                    listSize = 1;
+                    myList[cnt - 1].w = i;
+                    myList[cnt - 1].h = k;
+                    myList[cnt - 1].x = 0;
+                    myList[cnt - 1].y = 0;
+                    myList[cnt - 1].price = myMap->fieldPrice[i][k];
                 }
                 
                 continue;
@@ -164,8 +184,6 @@ static countRequest countRequestCalc(const map * myMap, const int investment) {
                     int value_rightTop, value_leftBottom, value_item, value_leftTop;
                     int mySize, summary;
                     
-                    if ((m == i && p == k) || (!m && !p)) continue;
-                    
                     value_item = myMap->fieldPrice[i][k];
                     value_leftTop = myMap->fieldPrice[m - 1][p - 1];
                     value_rightTop = myMap->fieldPrice[i][p - 1];
@@ -174,10 +192,29 @@ static countRequest countRequestCalc(const map * myMap, const int investment) {
                     mySize = (i - m + 1) * (k - p + 1);
                     
                     if (summary <= investment) {
-                        if (maxReachedSize == mySize) cnt++;
+                        if (maxReachedSize == mySize) {
+                            cnt++;
+                            if (cnt > listSize) {
+                                listSize *= 2;
+                                myList = (list*) realloc(myList, listSize * sizeof(list));
+                            }
+                            myList[cnt - 1].w = i - m + 1;
+                            myList[cnt - 1].h = k - p + 1;
+                            myList[cnt - 1].x = p - 1;
+                            myList[cnt - 1].y = m - 1;
+                            myList[cnt - 1].price = summary;
+                        }
                         else if (mySize > maxReachedSize) {
                             cnt = 1;
                             maxReachedSize = mySize;
+                            free(myList);
+                            myList = (list*) malloc(sizeof(list));
+                            listSize = 1;
+                            myList[cnt - 1].w = i - m + 1;
+                            myList[cnt - 1].h = k - p + 1;
+                            myList[cnt - 1].x = p - 1;
+                            myList[cnt - 1].y = m - 1;
+                            myList[cnt - 1].price = summary;
                         }
                     }
                 }
@@ -186,8 +223,13 @@ static countRequest countRequestCalc(const map * myMap, const int investment) {
     }
     result.count = cnt;
     result.maxSize = maxReachedSize;
+    result.listed = myList;
     
     return result;
+}
+
+int compare (const void * a, const void * b) {
+    return ( (*(list*)a).x - (*(list*)b).x );
 }
 
 //
@@ -198,6 +240,17 @@ static countRequest countRequestCalc(const map * myMap, const int investment) {
 static void listRequestCalc (const map * myMap, const int investment) {
     countRequest values = countRequestCalc(myMap, investment);
     
+    if (values.maxSize) {
+        printf("Max. rozloha: %d (x %d)\n", values.maxSize, values.count);
+        
+        qsort(values.listed, values.count, sizeof(list), compare);
+        for (int i = 0; i < values.count; i++) {
+            printf("%d: %d x %d @ (%d,%d)\n", values.listed[i].price, values.listed[i].h, values.listed[i].w, values.listed[i].x, values.listed[i].y);
+        }
+    }
+    else
+        printf("Nenalezeno.\n");
+    free(values.listed);
 }
 
 //
@@ -216,11 +269,12 @@ static void behaviorCalc (const map * myMap) {
                 printf("Max. rozloha: %d (x %d)\n", v.maxSize, v.count);
             else
                 printf("Nenalezeno.\n");
+            free(v.listed);
         }
-        else if (!strcmp(currRequest.keyname, "list"))
+        else if (!strcmp(currRequest.keyname, "list")) {
             listRequestCalc(myMap, currRequest.investment);
+        }
         else {
-            free(currRequest.keyname);
             wrongInput();
         }
     }
@@ -232,7 +286,6 @@ int main(void) {
     
     loadMapSize(&myMap);
     loadMapValues(&myMap);
-//    print(&myMap);
     behaviorCalc(&myMap);
 
     return 0;
