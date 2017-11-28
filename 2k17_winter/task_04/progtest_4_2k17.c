@@ -111,19 +111,17 @@ static void loadMapValues (map * myMap) {
 static request loadRequest (void) {
     request result = {"0", 0, false};
     char req [10];
-    int n, ref;
+    int n = 0, ref;
     
     ref = scanf("%9s %d", req, &n);
-    if (n < 1) {
-        wrongInput();
-    }
     if (ref == EOF) {
         result.eof = true;
         return result;
     }
-    else if (ref != 2) {
+    if (n < 1 || ref != 2) {
         wrongInput();
     }
+    
     
     result.investment = n;
     strcpy(result.keyname, req);
@@ -287,6 +285,11 @@ int main(void) {
     loadMapSize(&myMap);
     loadMapValues(&myMap);
     behaviorCalc(&myMap);
+    
+    for (int i = 0; i < myMap.length; i++) {
+        free(myMap.fieldPrice[i]);
+    }
+    free(myMap.fieldPrice);
 
     return 0;
 }
