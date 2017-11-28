@@ -1,15 +1,16 @@
 #
+#
 #	This tester is created for unit testing of c or cpp programs
 #	
 #	It is created to accept exactly 3 arguments
-#	./tester.sh [option] [file] [directory] [--continue]
+#	./tester.sh [-c/-cpp] [file] [directory] [--continue]
 #
 #	Options:
 #		-c		Uses gcc -std=c99 compiler
 #		
 #		-cpp		Uses g++ -std=c++11 compiler
 #
-#		--continue	Continue testing even if test failed
+#		--continue	Continue testing even if test failed (optional)
 #
 #
 #	File:
@@ -30,7 +31,7 @@ acnt=3
 cont=0
 
 #input check
-if [ $# -ne $acnt -a $# -ne $((acnt + 1)) ]; then
+if [ $# -ne $acnt -a $# -ne $(($acnt + 1)) ]; then
 	echo -e "ERROR: Invalid count of parameters\nExpected $acnt\nGot $#\n"
 	exit 1
 elif [ $1 != "-c" -a $1 != "-cpp" ]; then
