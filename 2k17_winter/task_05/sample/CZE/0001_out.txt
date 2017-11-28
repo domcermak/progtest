@@ -1,0 +1,9 @@
+Pocty pruhu:
+Trasy:
+Vozidel: 55440
+Vozidel: 16
+Vozidel: 16
+Vozidel: 144
+Vozidel: 144
+Vozidel: 144
+Nespravny vstup.

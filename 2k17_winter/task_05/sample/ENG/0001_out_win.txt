@@ -1,0 +1,9 @@
+Lanes:
+Routes:
+Vehicles: 55440
+Vehicles: 16
+Vehicles: 16
+Vehicles: 144
+Vehicles: 144
+Vehicles: 144
+Invalid input.

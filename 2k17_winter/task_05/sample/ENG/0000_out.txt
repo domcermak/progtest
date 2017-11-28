@@ -1,0 +1,10 @@
+Lanes:
+Routes:
+Vehicles: 2520
+Vehicles: 60
+Vehicles: 60
+Vehicles: 420
+Vehicles: 840
+Vehicles: 210
+Vehicles: 2520
+Vehicles: 9

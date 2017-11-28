@@ -1,0 +1,10 @@
+Pocty pruhu:
+Trasy:
+Vozidel: 2520
+Vozidel: 60
+Vozidel: 60
+Vozidel: 420
+Vozidel: 840
+Vozidel: 210
+Vozidel: 2520
+Vozidel: 9
