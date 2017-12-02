@@ -1,15 +1,16 @@
 #
-#	This tester is created for unit testing of c or cpp programs by Dominik Čermák
+#
+#	This tester is created for unit testing of c or cpp programs
 #	
 #	It is created to accept exactly 3 arguments
-#	./tester.sh [options] [file] [directory]
+#	./tester.sh [-c/-cpp] [file] [directory] [--continue]
 #
 #	Options:
 #		-c		Uses gcc -std=c99 compiler
 #		
 #		-cpp		Uses g++ -std=c++11 compiler
 #
-#		####--continue	Continue testing even if test failed      not implemented!!!!
+#		--continue	Continue testing even if test failed (optional)
 #
 #
 #	File:
@@ -17,7 +18,8 @@
 #
 #
 #	Directory:
-#		Expects directory with folder named "sample", that contains test files (e.g. sample/CZE/0000_in.txt)
+#		Expects directory with folder named "sample", that contains test files 
+#		(e.g. sample/CZE/0000_in.txt)
 #
 #
 
@@ -25,26 +27,31 @@
 #!/bin/bash
 
 clear;
-
 acnt=3
+cont=0
 
 #input check
-if [ $# -ne $acnt ]; then
-	echo -e "ERROR: Invalid count of parameters\nExpected $acnt\nGot $#\n"
+if [ $# -ne $acnt -a $# -ne $(($acnt + 1)) ]; then
+	echo -e "ERROR: Invalid count of parameters\nExpected $acnt or $((acnt + 1))\nGot $#\n"
 	exit 1
 elif [ $1 != "-c" -a $1 != "-cpp" ]; then
-	echo -e "ERROR: Invalid type of the first argument\nExpected -c or -cpp\n"
+	echo -e "ERROR: Invalid type of option\nExpected -c or -cpp\n"
 	exit 1
 elif [ ! -f "$2" ]; then
-	echo -e "ERROR: Invalid type of the third argument\nExpected valid *.c or *.cpp file\n"
+	echo -e "ERROR: Invalid type of argument\nExpected valid *.c or *.cpp file\n"
 	exit 2
 elif [ ! -d "$3" ]; then 
-	echo -e "ERROR: Invalid type of the fourth argument\nExpected directory where id directory \"sample\" with unit test files\n"
+	echo -e "ERROR: Invalid type of argument\nExpected directory where id directory \"sample\" with unit test files\n"
+	exit 2
+fi
+
+if [[ $# == 4 && $4 != "--continue" ]]; then
+	echo -e "ERROR: Invalid type of option\n"
 	exit 2
 fi
 
 if [ ! -f $3\sample/CZE/0000_in.txt -o ! -f $3\sample/CZE/0000_out.txt ]; then 
-	echo -e 
+	echo -e "ERROR: Invalid tester files hierarchy in $3\n"
 	exit 1
 fi
 
@@ -74,6 +81,9 @@ do
 	then
 		echo -e "\nError test $i!\nInput data:\n$(cat $inFile)";
 		echo -e "\n$TM\n";
+		if [ $# -ne 4 ]; then
+			exit 2
+		fi
 	fi
 done
 
@@ -87,3 +97,8 @@ for ((i = 0; i < $FCNT; i++)); do
 done
 rm -rf $COM;
 exit 0;
+
+
+#
+#		(c) Dominik Čermák 2017
+#
