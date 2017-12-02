@@ -9,13 +9,15 @@
 #include <stdbool.h>
 #include <assert.h>
 
+typedef unsigned long long int ulli;
+
 //
 //  Struct of stripe
 //  @param array
 //  @param length
 //
 typedef struct {
-	int * array;
+	ulli * array;
 	size_t length;
 } stripe;
 
@@ -45,39 +47,50 @@ static void wrongInput (void) {
 //
 static stripe loadStripes (void) {
 	stripe myStripe = {NULL, 0};
-	int * result = (int*) malloc (sizeof(int));
+	ulli * result = (ulli*) malloc (sizeof(ulli));
 	size_t mySize = 1;
 
 	
 	printf("Pocty pruhu:\n");
 	for (size_t i = 0; true; i++) {
-		int ref = 0;
+		int ref1 = 0, ref2 = 0;
 		int value = 0;
 		char str[2], c;
 
-		ref = scanf("%1s %d", str, &value);
+		ref1 = scanf("%1s", str);
 		c = str[0];
-
-		if (!i && c != '{') wrongInput();
-		if (i) {
-			if (c == '}') {
-				myStripe.array = result;
-				myStripe.length = i;
-
-				return myStripe;
-			}
-			if (ref != 2 || c != ',' || value < 1)
-                wrongInput();
-		}
+        
+        if (i && ref1 == 1 && c == '}') {
+            myStripe.array = result;
+            myStripe.length = i;
+            
+            return myStripe;
+        }
+        
+        ref2 = scanf("%d", &value);
+		if (!i && (c != '{' || ref2 != 1 || value < 1)) wrongInput();
+		if (i && (ref1 != 1 || ref2 != 1 || c != ',' || value < 1))
+            wrongInput();
 		
 		if (mySize <= i) {
 			mySize *= 2;
-			result = (int*) realloc (result, mySize * sizeof(int));
+			result = (ulli*) realloc (result, mySize * sizeof(ulli));
 		}
 
-		*(result + i) = value;
+		*(result + i) = (ulli)value;
 	}
 }
+
+//počty pruhů silnice nebyla celá kladná čísla,
+//nebyl zadán ani jeden úsek silnice,
+//chybí nebo přebývají oddělovače v zadání úseků silnice (složené závorky, čárky),
+//indexy from nebo to nejsou celá čísla,
+//indexy from nebo to jsou mimo rozsah (překračují počet úseků silnice),
+//index from je vyšší nebo roven indexu to.
+
+
+
+
 
 //
 //  Load way values
@@ -94,7 +107,10 @@ static way loadWay (const stripe * s) {
 	}
 	if (ref != 2 || from < 0 || from >= to || s->length < (size_t)to)
 		wrongInput();
-
+    
+    result.from = from;
+    result.to = to;
+    
 	return result;
 }
 
@@ -103,7 +119,7 @@ static way loadWay (const stripe * s) {
 //  @param a Number a
 //  @param b Number b
 //
-static int gcd (const int a, const int b) {
+static ulli gcd (const ulli a, const ulli b) {
     return !b ? a : gcd(b, a % b);
 }
 
@@ -112,41 +128,42 @@ static int gcd (const int a, const int b) {
 //  @param a Number a
 //  @param b Number b
 //
-static int lcm (const int a, const int b) {
-    return (a * b) / gcd(a, b);
+static ulli lcm (const ulli a, const ulli b) {
+    return a / gcd(a, b) * b;
 }
 
-static int carCountCalc(const stripe * myStripe, const way * myWay) {
-    int result = myStripe->array[myWay->from];
+static ulli carCountCalc(const stripe * myStripe, const way * myWay) {
+    ulli result = myStripe->array[myWay->from];
     
-    for (int i = myWay->from + 1; i < myWay->to + 1; i++)
+    for (int i = myWay->from + 1; i < myWay->to; i++)
         result = lcm(result, myStripe->array[i]);
     
     return result;
 }
 
-//
-//  Deallocate allocated list
-//  @param myList Stripe list with allocated array
-//
-static void removeStripes (stripe * myList) {
-    free(myList->array);
+static void testing (void) {
+    assert(gcd(12, 15) == 3);
+    assert(gcd(45, 30) == 15);
+    assert(lcm(6, 5) == 30);
+    assert(lcm(6, 9) == 18);
 }
 
 //  run
 int main (void) {
     stripe stripeList = loadStripes();
 	
+    testing();
+    
 	printf("Trasy:\n");
 	while (true) {
 		way myWay = loadWay(&stripeList);
-		int cnt;
+		ulli cnt;
 
 		if (myWay.eof) break;
 		cnt = carCountCalc(&stripeList, &myWay);
-		printf("Vozidel: %d\n", cnt);
+		printf("Vozidel: %llu\n", cnt);
 	}
-    removeStripes(&stripeList);
+    free(stripeList.array);
     
     return 0;
 }

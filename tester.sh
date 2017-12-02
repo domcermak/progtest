@@ -32,7 +32,7 @@ cont=0
 
 #input check
 if [ $# -ne $acnt -a $# -ne $(($acnt + 1)) ]; then
-	echo -e "ERROR: Invalid count of parameters\nExpected $acnt\nGot $#\n"
+	echo -e "ERROR: Invalid count of parameters\nExpected $acnt or $((acnt + 1))\nGot $#\n"
 	exit 1
 elif [ $1 != "-c" -a $1 != "-cpp" ]; then
 	echo -e "ERROR: Invalid type of option\nExpected -c or -cpp\n"
