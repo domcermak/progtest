@@ -27,3 +27,12 @@
 *.exe
 *.out
 *.app
+
+# XCode project files
+*.xcodeproj
+*.pbxproj
+*.xcworkspace
+*.xcuserdatad
+*.xcuserstate
+*.xcbkptlist
+*.plist
