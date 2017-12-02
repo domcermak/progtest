@@ -1,20 +1,18 @@
-//
-//  Created as a part of http://www.github.com/domcermak/progtest
-//  Copyright © 2017 Dominik Čermák. All rights reserved.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
 
+//
+//  Custom alias for positive 64-bit integer
+//
 typedef unsigned long long int ulli;
 
 //
 //  Struct of stripe
-//  @param array
-//  @param length
+//  @param array    Array of numbers containing values of stripes count
+//  @param length   Length of array of stripes
 //
 typedef struct {
 	ulli * array;
@@ -23,9 +21,9 @@ typedef struct {
 
 //
 //  Struct of way values
-//  @param from
-//  @param to
-//  @param eof
+//  @param from Index of starting stripe in array
+//  @param to   Index of ending stripe after last used stripe in order
+//  @param eof  Boolean value if EOF occured while reading from stdin
 //
 typedef struct {
 	int from;
@@ -81,20 +79,10 @@ static stripe loadStripes (void) {
 	}
 }
 
-//počty pruhů silnice nebyla celá kladná čísla,
-//nebyl zadán ani jeden úsek silnice,
-//chybí nebo přebývají oddělovače v zadání úseků silnice (složené závorky, čárky),
-//indexy from nebo to nejsou celá čísla,
-//indexy from nebo to jsou mimo rozsah (překračují počet úseků silnice),
-//index from je vyšší nebo roven indexu to.
-
-
-
-
-
 //
 //  Load way values
-//  @param s Stripe list with filled values
+//  @param s    Stripe list with filled values
+//  @return     Way with filled falues
 //
 static way loadWay (const stripe * s) {
 	way result = {0, 0, false};
@@ -118,6 +106,7 @@ static way loadWay (const stripe * s) {
 //  Greatest common divisor
 //  @param a Number a
 //  @param b Number b
+//  @return Gcd of numbers a and b
 //
 static ulli gcd (const ulli a, const ulli b) {
     return !b ? a : gcd(b, a % b);
@@ -127,11 +116,18 @@ static ulli gcd (const ulli a, const ulli b) {
 //  Lowest common multiple
 //  @param a Number a
 //  @param b Number b
+//  @return Lcm of numbers a and b
 //
 static ulli lcm (const ulli a, const ulli b) {
     return a / gcd(a, b) * b;
 }
 
+//
+//
+//  @param myStripe
+//  @param myWay
+//  @return Lowest count of cars that are needed to success
+//
 static ulli carCountCalc(const stripe * myStripe, const way * myWay) {
     ulli result = myStripe->array[myWay->from];
     
@@ -141,18 +137,25 @@ static ulli carCountCalc(const stripe * myStripe, const way * myWay) {
     return result;
 }
 
+#ifndef __PROGTEST__
+//
+//  Function testing
+//
 static void testing (void) {
     assert(gcd(12, 15) == 3);
     assert(gcd(45, 30) == 15);
     assert(lcm(6, 5) == 30);
     assert(lcm(6, 9) == 18);
 }
+#endif // __PROGTEST__
 
 //  run
 int main (void) {
     stripe stripeList = loadStripes();
 	
+#ifndef __PROGTEST__
     testing();
+#endif // __PROGTEST__
     
 	printf("Trasy:\n");
 	while (true) {
