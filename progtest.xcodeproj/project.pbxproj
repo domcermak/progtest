@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8449CA3C1FCC71210079F503 /* progtest_4_2k17.c in Sources */ = {isa = PBXBuildFile; fileRef = 8449CA3B1FCC71210079F503 /* progtest_4_2k17.c */; };
+		8416403E1FCF2B3A0045F2A1 /* progtest_5_2k17.c in Sources */ = {isa = PBXBuildFile; fileRef = 8416403D1FCF2B390045F2A1 /* progtest_5_2k17.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,7 +23,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8449CA3B1FCC71210079F503 /* progtest_4_2k17.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = progtest_4_2k17.c; path = 2k17_winter/task_04/progtest_4_2k17.c; sourceTree = "<group>"; };
+		8416403D1FCF2B390045F2A1 /* progtest_5_2k17.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = progtest_5_2k17.c; path = 2k17_winter/task_05/progtest_5_2k17.c; sourceTree = "<group>"; };
 		84B6BF501FC582870055DBA4 /* progtest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = progtest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -41,7 +41,7 @@
 		84B6BF471FC582870055DBA4 = {
 			isa = PBXGroup;
 			children = (
-				8449CA3B1FCC71210079F503 /* progtest_4_2k17.c */,
+				8416403D1FCF2B390045F2A1 /* progtest_5_2k17.c */,
 				84B6BF511FC582870055DBA4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -111,7 +111,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8449CA3C1FCC71210079F503 /* progtest_4_2k17.c in Sources */,
+				8416403E1FCF2B3A0045F2A1 /* progtest_5_2k17.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
