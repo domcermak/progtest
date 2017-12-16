@@ -10,6 +10,7 @@
 typedef struct {
     char * word;
     size_t length;
+    size_t indexLen;
     int * indexInOrigin;
 } string;
 
@@ -49,7 +50,12 @@ static void printSentence(string ** wordList, const size_t length) {
             printf("%c", *(word->word + k));
         }
         
-        printf(" -> %d\n", *word->indexInOrigin);
+        printf(" -> ");
+        
+        for (size_t k = 0; k < word->indexLen; k++) {
+            printf("%d, ", word->indexInOrigin[k]);
+        }
+        printf("\n");
     }
     
     exit(EXIT_SUCCESS);
@@ -136,6 +142,7 @@ static string ** separate (const string * sentence, size_t * length) {
     *sepString->indexInOrigin = 0;
     sepString->length = 0;
     sepString->word = (char*) malloc(sizeof(char));
+    sepString->indexLen = 1;
     
     
     for (int i = 0; i < sentence->length; i++) {
@@ -162,6 +169,7 @@ static string ** separate (const string * sentence, size_t * length) {
             sepString = (string*) malloc(sizeof(string));
             sepString->indexInOrigin = (int*) malloc(sizeof(int));
             *sepString->indexInOrigin = i + 1;
+            sepString->indexLen = 1;
             sepString->length = 0;
             sepString->word = (char*) malloc(sizeof(char));
 
@@ -180,6 +188,22 @@ static string ** separate (const string * sentence, size_t * length) {
     return result;
 }
 
+bool isSameString (const string * a, const string * b) {
+    size_t len;
+    
+    if (!a || !b) return false;
+    
+    len = a->length;
+    if (a->length != b->length)
+        return false;
+    
+    for (size_t i = 0; i < len; i++)
+        if (*(a->word + i) != *(b->word + i))
+            return false;
+    
+    return true;
+}
+
 //  Compare function created for quick sort function to sort items type of string**
 //  @param a Compared item 1
 //  @param b Compared item 2
@@ -196,35 +220,78 @@ static int compare (const void * a, const void * b) {
             return *(ia->word + i) > *(ib->word + i) ? 1 : -1;
     
     if (ia->length != ib->length)
-        return (int)(ia->length > ib->length ? ia->length : ib->length);
+        return ia->length > ib->length ? 1 : -1;
     
     return 0;
+}
+
+static string ** wordUnique (string ** separated, const size_t length, size_t * uLen) {
+    string ** result = malloc(length * sizeof(string*));
+    string * lastWord = NULL;
+    size_t indexSize = 1;
+    size_t resultIndex = 0;
+    
+    for (size_t i = 0; i < length; i++) {
+        string * word = *(separated + i);
+        
+        if (isSameString(lastWord, word)) {
+            int * w = result[resultIndex - 1]->indexInOrigin;
+            
+            if (lastWord->indexLen + 1 >= indexSize) {
+                indexSize <<= 1;
+                w = realloc(w, indexSize * sizeof(int));
+            }
+            
+            w[lastWord->indexLen] = *word->indexInOrigin;
+            lastWord->indexLen++;
+        }
+        else {
+            result[resultIndex] = separated[i];
+            lastWord = result[resultIndex];
+            resultIndex++;
+        }
+    }
+    *uLen = resultIndex;
+    
+    return result;
 }
 
 //  Create binary tree from origin sentence
 //  @param origin   Original sentence in one array
 //  @return         Pointer to root of binary tree created from origin sentence
-static string * parseSentence (const string * sentence) {
-    size_t sepLength;
-    string * list = NULL;
+static string ** parseSentence (const string * sentence, string ** sepPtr, size_t * uniqLen, size_t * sepLen) {
+    size_t sepLength, uniqueLength = 0;
     string ** separateWords = separate(sentence, &sepLength);
+    string ** uniq = NULL;
     
     qsort(separateWords, sepLength, sizeof(string*), compare);
+    uniq = wordUnique(separateWords, sepLength, &uniqueLength);
+    *uniqLen = uniqueLength;
+    *sepLen = sepLength;
     
-//    unique
-    
-    return list;
+    return uniq;
 }
 
 //	run
 int main (void) {
+    size_t uLen, sepLen;
     string * sentenceOrigin = loadSentence();
-    string * list = parseSentence(sentenceOrigin);
+    string ** sepPtr;
+    string ** list = parseSentence(sentenceOrigin, sepPtr, &uLen, &sepLen);
     
 //    for (int i = 0; true; i++) {
 //        string * request;
 //    }
     
+    for (size_t i = 0; i < uLen; i++) {
+        free(list[i]->indexInOrigin);
+    }
+    for (size_t i = 0; i < sepLen; i++) {
+        free(sepPtr[i]->indexInOrigin);
+        free(sepPtr[i]->word);
+    }
+    
+    free(sepPtr);
     free(sentenceOrigin);
     
 	return 0;
