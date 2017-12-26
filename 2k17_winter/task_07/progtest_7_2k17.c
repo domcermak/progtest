@@ -49,10 +49,10 @@ static inline int loadParcelListLength (bool * print) {
     char request [6];
     
     printf("Vypocty:\n");
-    ref = scanf("%6s %d", request, &len);
+    ref = scanf("%5s %d", request, &len);
     
     if (!isValidRequest(request, print)) wrongInput();
-    if (ref == EOF) return -1;
+    if (ref == EOF) return EOF;
     if ( ref != 1 || len < 1) wrongInput();
     
     return len;
@@ -62,8 +62,8 @@ static inline int loadParcelListLength (bool * print) {
 //  @param modul Value of modul
 //  @param list Length of parcel list
 //  @param printList Boolean value if parcel list should be printed
-static inline void evaluateParcelList (const register int modul, const register int list, const bool printList) {
-//        @TODO
+static inline void evaluateParcelList (const int modul, const int list, const bool printList) {
+    
 }
 
 //run
