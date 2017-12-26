@@ -1,0 +1,6 @@
+3
+list 1
+list 2
+list 4
+count 5
+count 12
