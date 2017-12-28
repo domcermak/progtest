@@ -101,5 +101,7 @@ int main (void) {
     freeList ( b );
     freeList ( a );
     
+    printf("Test succeeded.\n");
+    
     return 0;
 }

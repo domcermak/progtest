@@ -6,8 +6,21 @@
 //  @param root Pointer to the first employee
 //  @param name Name of employee
 //  @return Adress of found employee
-static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, const char * name) {
-    return !strcmp(name, root->m_Name) ? root : findPerson(root->m_Next, name);
+static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOYEE * backup) {
+    TEMPLOYEE * tmp = src;
+    size_t cnt = 0;
+    
+    while (1) {
+        if (tmp == backup) break;
+        cnt++;
+        tmp = tmp->m_Next;
+    }
+    
+    tmp = root;
+    for (size_t i = 0; i < cnt; i++)
+        tmp = tmp->m_Next;
+    
+    return tmp;
 }
 
 //  Add new employee to list
@@ -51,7 +64,7 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
     ptrR = root;
     ptrS = src;
     while (ptrS) {
-        if (ptrS->m_Bak) ptrR->m_Bak = findPerson(root, ptrS->m_Bak->m_Name);
+        if (ptrS->m_Bak) ptrR->m_Bak = findPerson(root, src, ptrS->m_Bak);
         ptrR = ptrR->m_Next;
         ptrS = ptrS->m_Next;
     }
@@ -62,8 +75,10 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
 //  Delete list of employees
 //  @param src Pointer to the first employee in the list
 void freeList(TEMPLOYEE * src) {
-    TEMPLOYEE * tmp = src->m_Next;
-    
-    free(src);
-    if (tmp) return freeList(tmp);
+    while (src) {
+        TEMPLOYEE * tmp = src->m_Next;
+        
+        free(src);
+        src = tmp;
+    }
 }
