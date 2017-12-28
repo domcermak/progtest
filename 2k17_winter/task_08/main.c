@@ -1,6 +1,6 @@
 #include "employee.h"
 
-int main (int argc, char ** argv) {
+int main (void) {
     TEMPLOYEE * a, *b;
     char tmp[100];
     
