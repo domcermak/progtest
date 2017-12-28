@@ -3,14 +3,15 @@
 #endif // __PROGTEST__
 
 //  Find eployee's name in linked list
-//  @param root Pointer to the first employee
-//  @param name Name of employee
+//  @param root Pointer to the first employee in file to be added to
+//  @param src Pointer to the first employee in file to be read from
+//  @param backup Pointer to backup employee in src list
 //  @return Adress of found employee
 static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOYEE * backup) {
     TEMPLOYEE * tmp = src;
     size_t cnt = 0;
     
-    while (1) {
+    while ("SERU NA TO") {
         if (tmp == backup) break;
         cnt++;
         tmp = tmp->m_Next;
@@ -30,7 +31,7 @@ static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOY
 TEMPLOYEE * newEmployee (const char * name, TEMPLOYEE * next) {
     TEMPLOYEE * root = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
     
-    root->m_Name = (char*)malloc((strlen(name) + 1) * sizeof(char));
+    root->m_Name = (char*)malloc(strlen(name) * sizeof(char));
     strcpy(root->m_Name, name);
     root->m_Bak = NULL;
     root->m_Next = next;
@@ -49,7 +50,7 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
     ptrR = root;
     ptrS = src;
     while (ptrS) {
-        ptrR->m_Name = (char*)malloc((strlen((ptrS->m_Name)) + 1) * sizeof(char));
+        ptrR->m_Name = (char*)malloc(strlen(ptrS->m_Name) * sizeof(char));
         strcpy(ptrR->m_Name, ptrS->m_Name);
         ptrR->m_Bak = NULL;
         
