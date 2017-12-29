@@ -1,8 +1,14 @@
 #include "employee.h"
 
-int main (int argc, char ** argv) {
+int main (void) {
     TEMPLOYEE * a, *b;
     char tmp[100];
+    
+    assert(newEmployee(NULL, NULL));
+    assert(cloneList(NULL) == NULL);
+    assert(newEmployee(NULL, newEmployee(NULL, NULL)));
+    assert(cloneList(newEmployee(NULL, newEmployee(NULL, NULL))));
+    freeList(NULL);
     
     assert ( sizeof ( TEMPLOYEE ) == 3 * sizeof ( void * ) );
     a = NULL;
@@ -100,6 +106,8 @@ int main (int argc, char ** argv) {
     assert ( b -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
     freeList ( b );
     freeList ( a );
+    
+    printf("Test succeeded.\n");
     
     return 0;
 }

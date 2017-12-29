@@ -7,7 +7,7 @@
 //  Employee struct
 typedef struct TEmployee {
     struct TEmployee * m_Next; // pointer to following employee int the list
-    struct TEmployee * m_Bak;
+    struct TEmployee * m_Bak; // pointer to backup employee
     char * m_Name; // Name of person
 } TEMPLOYEE; // Employee data type
 
