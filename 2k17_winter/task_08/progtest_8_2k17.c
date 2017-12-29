@@ -33,7 +33,7 @@ TEMPLOYEE * newEmployee (const char * name, TEMPLOYEE * next) {
     
     if (!name) root->m_Name = NULL;
     else {
-        root->m_Name = (char*)malloc(strlen(name) * sizeof(char));
+        root->m_Name = (char*)malloc((1 + strlen(name)) * sizeof(char));
         strcpy(root->m_Name, name);
     }
     root->m_Bak = NULL;
@@ -55,16 +55,20 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
     while (ptrS) {
         if (!ptrS->m_Name) ptrR->m_Name = NULL;
         else {
-            ptrR->m_Name = (char*)malloc(strlen(ptrS->m_Name) * sizeof(char));
+            ptrR->m_Name = (char*)malloc((1 + strlen(ptrS->m_Name)) * sizeof(char));
             strcpy(ptrR->m_Name, ptrS->m_Name);
         }
         ptrR->m_Bak = NULL;
         
         ptrS = ptrS->m_Next;
-        if (!ptrS) break;
+        if (!ptrS) {
+            ptrR->m_Next = NULL;
+            break;
+        }
         ptrR->m_Next = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
         ptrR = ptrR->m_Next;
     }
+    
     
     ptrR = root;
     ptrS = src;
