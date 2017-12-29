@@ -3,11 +3,25 @@
 #endif // __PROGTEST__
 
 //  Find eployee's name in linked list
-//  @param root Pointer to the first employee
-//  @param name Name of employee
+//  @param root Pointer to the first employee in file to be added to
+//  @param src Pointer to the first employee in file to be read from
+//  @param backup Pointer to backup employee in src list
 //  @return Adress of found employee
-static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, const char * name) {
-    return !strcmp(name, root->m_Name) ? root : findPerson(root->m_Next, name);
+static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOYEE * backup) {
+    TEMPLOYEE * tmp = src;
+    size_t cnt = 0;
+    
+    while ("SERU NA TO") {
+        if (tmp == backup) break;
+        cnt++;
+        tmp = tmp->m_Next;
+    }
+    
+    tmp = root;
+    for (size_t i = 0; i < cnt; i++)
+        tmp = tmp->m_Next;
+    
+    return tmp;
 }
 
 //  Add new employee to list
@@ -17,8 +31,11 @@ static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, const char * name) {
 TEMPLOYEE * newEmployee (const char * name, TEMPLOYEE * next) {
     TEMPLOYEE * root = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
     
-    root->m_Name = (char*)malloc((strlen(name) + 1) * sizeof(char));
-    strcpy(root->m_Name, name);
+    if (!name) root->m_Name = NULL;
+    else {
+        root->m_Name = (char*)malloc((1 + strlen(name)) * sizeof(char));
+        strcpy(root->m_Name, name);
+    }
     root->m_Bak = NULL;
     root->m_Next = next;
     
@@ -36,22 +53,27 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
     ptrR = root;
     ptrS = src;
     while (ptrS) {
-        ptrR->m_Name = (char*)malloc((strlen((ptrS->m_Name)) + 1) * sizeof(char));
-        strcpy(ptrR->m_Name, ptrS->m_Name);
+        if (!ptrS->m_Name) ptrR->m_Name = NULL;
+        else {
+            ptrR->m_Name = (char*)malloc((1 + strlen(ptrS->m_Name)) * sizeof(char));
+            strcpy(ptrR->m_Name, ptrS->m_Name);
+        }
         ptrR->m_Bak = NULL;
         
         ptrS = ptrS->m_Next;
-        if (!ptrS) break;
-        else {
-            ptrR->m_Next = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
-            ptrR = ptrR->m_Next;
+        if (!ptrS) {
+            ptrR->m_Next = NULL;
+            break;
         }
+        ptrR->m_Next = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
+        ptrR = ptrR->m_Next;
     }
+    
     
     ptrR = root;
     ptrS = src;
     while (ptrS) {
-        if (ptrS->m_Bak) ptrR->m_Bak = findPerson(root, ptrS->m_Bak->m_Name);
+        if (ptrS->m_Bak) ptrR->m_Bak = findPerson(root, src, ptrS->m_Bak);
         ptrR = ptrR->m_Next;
         ptrS = ptrS->m_Next;
     }
@@ -62,8 +84,11 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
 //  Delete list of employees
 //  @param src Pointer to the first employee in the list
 void freeList(TEMPLOYEE * src) {
-    TEMPLOYEE * tmp = src->m_Next;
-    
-    free(src);
-    if (tmp) return freeList(tmp);
+    while (src) {
+        TEMPLOYEE * tmp = src->m_Next;
+        
+        free(src->m_Name);
+        free(src);
+        src = tmp;
+    }
 }
