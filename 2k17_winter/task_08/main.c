@@ -4,6 +4,12 @@ int main (void) {
     TEMPLOYEE * a, *b;
     char tmp[100];
     
+    assert(newEmployee(NULL, NULL));
+    assert(cloneList(NULL) == NULL);
+    assert(newEmployee(NULL, newEmployee(NULL, NULL)));
+    assert(cloneList(newEmployee(NULL, newEmployee(NULL, NULL))));
+    freeList(NULL);
+    
     assert ( sizeof ( TEMPLOYEE ) == 3 * sizeof ( void * ) );
     a = NULL;
     a = newEmployee ( "Peter", a );

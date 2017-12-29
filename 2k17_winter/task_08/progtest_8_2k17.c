@@ -31,8 +31,11 @@ static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOY
 TEMPLOYEE * newEmployee (const char * name, TEMPLOYEE * next) {
     TEMPLOYEE * root = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
     
-    root->m_Name = (char*)malloc(strlen(name) * sizeof(char));
-    strcpy(root->m_Name, name);
+    if (!name) root->m_Name = NULL;
+    else {
+        root->m_Name = (char*)malloc(strlen(name) * sizeof(char));
+        strcpy(root->m_Name, name);
+    }
     root->m_Bak = NULL;
     root->m_Next = next;
     
@@ -50,16 +53,17 @@ TEMPLOYEE * cloneList(TEMPLOYEE * src) {
     ptrR = root;
     ptrS = src;
     while (ptrS) {
-        ptrR->m_Name = (char*)malloc(strlen(ptrS->m_Name) * sizeof(char));
-        strcpy(ptrR->m_Name, ptrS->m_Name);
+        if (!ptrS->m_Name) ptrR->m_Name = NULL;
+        else {
+            ptrR->m_Name = (char*)malloc(strlen(ptrS->m_Name) * sizeof(char));
+            strcpy(ptrR->m_Name, ptrS->m_Name);
+        }
         ptrR->m_Bak = NULL;
         
         ptrS = ptrS->m_Next;
         if (!ptrS) break;
-        else {
-            ptrR->m_Next = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
-            ptrR = ptrR->m_Next;
-        }
+        ptrR->m_Next = (TEMPLOYEE*)malloc(sizeof(TEMPLOYEE));
+        ptrR = ptrR->m_Next;
     }
     
     ptrR = root;
@@ -79,6 +83,7 @@ void freeList(TEMPLOYEE * src) {
     while (src) {
         TEMPLOYEE * tmp = src->m_Next;
         
+        free(src->m_Name);
         free(src);
         src = tmp;
     }
