@@ -4,6 +4,12 @@ int main (void) {
     TEMPLOYEE * a, *b;
     char tmp[100];
     
+    assert(newEmployee(NULL, NULL));
+    assert(cloneList(NULL) == NULL);
+    assert(newEmployee(NULL, newEmployee(NULL, NULL)));
+    assert(cloneList(newEmployee(NULL, newEmployee(NULL, NULL))));
+    freeList(NULL);
+    
     assert ( sizeof ( TEMPLOYEE ) == 3 * sizeof ( void * ) );
     a = NULL;
     a = newEmployee ( "Peter", a );
@@ -100,6 +106,8 @@ int main (void) {
     assert ( b -> m_Next -> m_Next -> m_Next -> m_Next == NULL );
     freeList ( b );
     freeList ( a );
+    
+    printf("Test succeeded.\n");
     
     return 0;
 }
