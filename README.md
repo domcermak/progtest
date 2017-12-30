@@ -18,4 +18,4 @@ Readme of tester is at the beggining of `tester.sh` file
 
 ## feedback
 
-I will be thankful for every feedback to this project. Even if you have some idea for better solution, find some bug (then create issue) or feedback.
+I will be thankful for every reaction to this project. Even if you have some idea for better solution, find some bug (then create issue) or feedback.
