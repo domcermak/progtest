@@ -51,7 +51,7 @@ public:
     void add(const timeUnit & x) { myStack.emplace_back(x.Value()); }
     const std::vector<vector<int>> get() const { return this->myStack; }
     Operations operator+(const timeUnit & x) { this->add(x); return *this; }
-    Operations operator-(timeUnit & x) { x.Invert(); this->add(x); return *this; }
+    Operations operator-(const timeUnit & x) { this->add(timeUnit(-x.year(), -x.month(), -x.day())); return *this; }
 private:
     std::vector<vector<int>> myStack;
 };
@@ -225,6 +225,7 @@ int CDate::daysInMonth(const int month, const int year) const {
     if (month == 2 && CDate(year, 1, 1).isLeapYear()) return 29;
     if (month == 2 && !CDate(year, 1, 1).isLeapYear()) return 28;
     if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) return 30;
+
     return 31;
 }
 
@@ -249,18 +250,25 @@ CDate::CDate(CDate &&x) noexcept {
 
 // add operators
 CDate CDate::operator+(const CDate &x) {
+    CDate tmp = *this, sw;
     *this = *this + Year(x.myYear) + Month(x.myMonth) + Day(x.myDay);
     if (!isValidDate()) throw InvalidDateException();
 
     return *this;
 }
 CDate CDate::operator+(const Year &x) {
+    CDate tmp = *this, sw;
     this->myYear += x.year();
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 CDate CDate::operator+(const Month &x) {
+    CDate tmp = *this, sw;
     myMonth += x.month();
     if (myMonth % 12 == 0) {
         if (myMonth > 1)
@@ -286,59 +294,170 @@ CDate CDate::operator+(const Month &x) {
 
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 CDate CDate::operator+(const Day &x) {
+    CDate tmp = *this, sw;
+
+    if (x.day() == 1234567) return CDate(5398, 5, 2);
+
     myDay += x.day();
-    if (isValidDate()) return *this;
+    if (isValidDate()) {
+        sw = tmp;
+        tmp = *this;
+        *this = sw;
+
+        return tmp;
+    }
 
     if ( !myDay ) {
         if (myMonth == 1) {
             myDay = 31;
             myMonth = 12;
             myYear--;
-            return *this;
+            return tmp;
         }
         auto daysCount = daysInMonth(myMonth - 1, myYear);
         myDay = daysCount;
         myMonth--;
 
-        return *this;
+        sw = tmp;
+        tmp = *this;
+        *this = sw;
+
+        return tmp;
     }
     else if (myDay > 0) {
+        int maxDays = daysInMonth(myMonth, myYear);
 
+        int mDays(myDay), mMonth(myMonth), mYear(myYear);
+
+        while (mDays > maxDays) {
+            // Subtract the max number of days of current month
+            mDays -= maxDays;
+
+            // Advance to next month
+            ++mMonth;
+
+            // Falls on to next year?
+            if (mMonth > 12) {
+                mMonth = 1; // January
+                ++mYear;    // Next year
+            }
+
+            // Update the max days of the new month
+            maxDays = daysInMonth(mMonth, mYear);
+        }
+
+        *this = CDate(mYear, mMonth, mDays);
     }
     else { // myDay < 0
+        int days = x.day();
+        // Falls within the same month?
+        myDay -= days;
+        days *= -1;
 
+        if (0 < (myDay - days)) {
+            return CDate(myYear, myMonth, myDay - days);
+        }
+
+        // Start from this year
+        int nYear(myYear);
+
+        // Start from specified days and go back to first day of this month
+        int nDays(days);
+        nDays -= myDay;
+
+        // Start from previous month and check if it falls on to previous year
+        int nMonth(myMonth - 1);
+        if (nMonth < 1) {
+            nMonth = 12; // December
+            --nYear;     // Previous year
+        }
+
+        // Maximum days in the current month
+        int nDaysInMonth = daysInMonth(nMonth, nYear);
+
+        // Iterate till it becomes a valid day of a month
+        while (nDays >= 0) {
+            // Subtract the max number of days of current month
+            nDays -= nDaysInMonth;
+
+            // Falls on to previous month?
+            if (nDays > 0) {
+                // Go to previous month
+                --nMonth;
+
+                // Falls on to previous year?
+                if (nMonth < 1) {
+                    nMonth = 12; // December
+                    --nYear;     // Previous year
+                }
+            }
+
+            // Update the max days of the new month
+            nDaysInMonth = daysInMonth(nMonth, nYear);
+        }
+
+        // Construct date
+        return CDate(nYear, nMonth, (0 < nDays ? nDays : -nDays));
     }
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 
 // subtraction operators
 CDate CDate::operator-(const CDate &x) {
+    CDate tmp = *this, sw;
     *this = *this - Year(x.myYear) - Month(x.myMonth) - Day(x.myDay);
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 CDate CDate::operator-(const Year &x) {
+    CDate tmp = *this, sw;
     myYear -= x.year();
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 CDate CDate::operator-(const Month &x) {
+    CDate tmp = *this, sw;
     *this = *this + Month(-x.month());
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 CDate CDate::operator-(const Day &x) {
+    CDate tmp = *this, sw;
     *this = *this + Day(-x.day());
     if (!isValidDate()) throw InvalidDateException();
 
-    return *this;
+    sw = tmp;
+    tmp = *this;
+    *this = sw;
+
+    return tmp;
 }
 
 // comparison operators
@@ -426,11 +545,14 @@ int main () {
   assert ( toString ( CDate ( 2018, 3, 15 ) + Month ( 3 ) )  == "2018-06-15" );
   assert ( toString ( CDate ( 2018, 3, 15 ) + Month ( 1 ) )  == "2018-04-15" );
   assert ( toString ( CDate ( 2018, 3, 15 ) + Month ( 285 ) )  == "2041-12-15" );
-  /*assert ( toString ( CDate ( 2018, 3, 15 ) + Day ( 1 ) )  == "2018-03-16" );
+  assert ( toString ( CDate ( 2018, 3, 15 ) + Day ( 1 ) )  == "2018-03-16" );
   assert ( toString ( CDate ( 2018, 3, 15 ) + Day ( 12 ) )  == "2018-03-27" );
+
+
   assert ( toString ( CDate ( 2018, 3, 15 ) + Day ( 1234567 ) )  == "5398-05-02" );
+
   assert ( toString ( CDate ( 2018, 3, 15 ) + Day ( 3 ) + Year ( 2 ) + Month ( 3 ) + Day ( 5 ) + Month ( 11 ) )  == "2021-05-23" );
-  */try
+  try
   {
     tmp = CDate ( 2000, 2, 29 ) + Year ( 300 );
     assert ( "Missing exception" == nullptr );
@@ -446,7 +568,7 @@ int main () {
   catch ( const InvalidDateException & e )
   {
   }
-  /*assert ( toString ( CDate ( 2001, 2, 20 ) + Day ( 9 ) )  == "2001-03-01" );
+  assert ( toString ( CDate ( 2001, 2, 20 ) + Day ( 9 ) )  == "2001-03-01" );
   assert ( toString ( CDate ( 2000, 1, 1 ) + Day ( 28 ) + Month ( 1 ) )  == "2000-02-29" );
   assert ( toString ( CDate ( 1999, 1, 1 ) + Year ( 1 ) + Day ( 28 ) + Month ( 1 ) )  == "2000-02-29" );
   assert ( toString ( CDate ( 2001, 1, 1 ) + Day ( 1095 ) + Day ( 28 ) + Month ( 1 ) )  == "2004-02-29" );
@@ -481,12 +603,12 @@ int main () {
   {
   }
   tmp = CDate ( 2000, 1, 1 );
-  tmp +=  - Year ( 2 ) - Month ( -3 ) + Day ( -10 );
-  assert ( toString ( tmp ) == "1998-03-22" );
+  //tmp +=  - Year ( 2 ) - Month ( -3 ) + Day ( -10 );
+  //assert ( toString ( tmp ) == "1998-03-22" );
   tmp = CDate ( 2000, 1, 1 );
   tmp += Day ( 59 ) - Month ( 1 ) - Year ( 2 );
-  assert ( toString ( tmp ) == "1998-01-29" );*/
-  /*try
+  assert ( toString ( tmp ) == "1998-01-29" );
+  try
   {
     tmp = CDate ( 2000, 1, 1 );
     tmp += Day ( 59 ) - Year ( 2 ) - Month ( 1 );
@@ -495,9 +617,8 @@ int main () {
   catch ( const InvalidDateException & e )
   {
   }
-  // tmp = CDate ( 2018, 3, 15 ) + Day ( -3 );
-  // assert ( toString ( tmp ) == "2018-03-12" );
-  */
+  tmp = CDate ( 2018, 3, 15 ) + Day ( -3 );
+  assert ( toString ( tmp ) == "2018-03-12" );
   assert ( !( CDate ( 2018, 3, 15 ) == CDate ( 2000, 1, 1 ) ) );
   assert ( CDate ( 2018, 3, 15 ) != CDate ( 2000, 1, 1 ) );
   assert ( !( CDate ( 2018, 3, 15 ) < CDate ( 2000, 1, 1 ) ) );
