@@ -39,6 +39,9 @@ public:
     int year() const { return myValue[0]; }
     int month() const { return myValue[1]; }
     int day() const { return myValue[2]; }
+    timeUnit operator-() const & {
+        return timeUnit(-year(), -month(), -day());
+    }
 protected:
     vector<int> myValue;
 };
@@ -71,6 +74,9 @@ public:
 
         return tmp;
     }
+    Day operator-() const & {
+        return Day(-day());
+    }
 };
 
 class Month final : public timeUnit {
@@ -88,6 +94,9 @@ public:
 
         return tmp;
     }
+    Month operator-() const & {
+        return Month(-month());
+    }
 };
 
 class Year final : public timeUnit {
@@ -104,6 +113,9 @@ public:
         tmp.add(timeUnit(-x.year(), -x.month(), -x.day()));
 
         return tmp;
+    }
+    Year operator-() const & {
+        return Year(-year());
     }
 };
 
@@ -132,7 +144,7 @@ class CDate
     CDate operator+ (const Year & x);
 
     // operator(s) -
-    CDate operator- (const CDate & x);
+    int operator- (const CDate & x);
     CDate operator- (const Year & x);
     CDate operator- (const Month & x);
     CDate operator- (const Day & x);
@@ -142,7 +154,6 @@ class CDate
 
     // operator ==
     bool operator== (const CDate & x) const;
-    bool operator== (int x) const;
 
     // operator !=
     bool operator!= (const CDate & x) const;
@@ -162,7 +173,6 @@ class CDate
 
     bool isLeapYear() const;
     bool isValidDate() const;
-    int toDays() const;
     int daysInMonth(int month, int year) const;
 };
 
@@ -206,21 +216,6 @@ bool CDate::isValidDate() const {
 
     return true;
 }
-int CDate::toDays() const {
-    int day(this->myDay), month(this->myMonth - 1), year(this->myYear - 1);
-    int totalDays(day);
-
-    // + days in months
-    if (month) {
-        // todo
-    }
-
-
-    // + days in years
-
-
-    return totalDays;
-}
 int CDate::daysInMonth(const int month, const int year) const {
     if (month == 2 && CDate(year, 1, 1).isLeapYear()) return 29;
     if (month == 2 && !CDate(year, 1, 1).isLeapYear()) return 28;
@@ -250,7 +245,7 @@ CDate::CDate(CDate &&x) noexcept {
 
 // add operators
 CDate CDate::operator+(const CDate &x) {
-    CDate tmp = *this, sw;
+    CDate tmp = *this, sw = *this;
     *this = *this + Year(x.myYear) + Month(x.myMonth) + Day(x.myDay);
     if (!isValidDate()) throw InvalidDateException();
 
@@ -415,16 +410,28 @@ CDate CDate::operator+(const Day &x) {
 }
 
 // subtraction operators
-CDate CDate::operator-(const CDate &x) {
-    CDate tmp = *this, sw;
-    *this = *this - Year(x.myYear) - Month(x.myMonth) - Day(x.myDay);
-    if (!isValidDate()) throw InvalidDateException();
+int CDate::operator-(const CDate &x) {
+    typedef long long int lli;
+    lli curr_cnt = 0, host_cnt = 0;
+    lli month_days[] = {0,31,59,90,120,151,181,212,243,273,304,334};
+    int leapyears = 0;
 
-    sw = tmp;
-    tmp = *this;
-    *this = sw;
+    leapyears += myYear / 4;
+    leapyears -= myYear / 100;
+    leapyears += myYear / 400;
+    leapyears -= myYear / 4000;
+    curr_cnt = (lli) myYear * 365 + month_days[myMonth-1] + myDay + leapyears;
+    if (this->isLeapYear() && myMonth < 3) curr_cnt--;
 
-    return tmp;
+    leapyears = 0;
+    leapyears += x.myYear / 4;
+    leapyears -= x.myYear / 100;
+    leapyears += x.myYear / 400;
+    leapyears -= x.myYear / 4000;
+    host_cnt = (lli) x.myYear * 365 + month_days[x.myMonth-1] + x.myDay + leapyears;
+    if (x.isLeapYear() && x.myMonth < 3) host_cnt--;
+
+    return (int)(curr_cnt - host_cnt);
 }
 CDate CDate::operator-(const Year &x) {
     CDate tmp = *this, sw;
@@ -463,9 +470,6 @@ CDate CDate::operator-(const Day &x) {
 // comparison operators
 bool CDate::operator==(const CDate &x) const {
     return this->myYear == x.myYear && this->myMonth == x.myMonth && this->myDay == x.myDay;
-}
-bool CDate::operator==(const int x) const {
-    return x == this->toDays();
 }
 bool CDate::operator!=(const CDate &x) const {
     return this->myYear != x.myYear || this->myMonth != x.myMonth || this->myDay != x.myDay;
@@ -603,8 +607,8 @@ int main () {
   {
   }
   tmp = CDate ( 2000, 1, 1 );
-  //tmp +=  - Year ( 2 ) - Month ( -3 ) + Day ( -10 );
-  //assert ( toString ( tmp ) == "1998-03-22" );
+  tmp +=  - Year ( 2 ) - Month ( -3 ) + Day ( -10 );
+  assert ( toString ( tmp ) == "1998-03-22" );
   tmp = CDate ( 2000, 1, 1 );
   tmp += Day ( 59 ) - Month ( 1 ) - Year ( 2 );
   assert ( toString ( tmp ) == "1998-01-29" );
@@ -639,10 +643,10 @@ int main () {
   catch (...)
   {
   }
-  //assert ( CDate ( 2018, 3, 15 ) - CDate ( 2000, 1, 1 ) == 6648 );
-  //assert ( CDate ( 2000, 1, 1 ) - CDate ( 2018, 3, 15 ) == -6648 );
-  //assert ( CDate ( 2018, 3, 15 ) + Year ( 3 ) + Month ( -18 ) - CDate ( 2000, 1, 1 ) == 7197 );
-  //assert ( CDate ( 5398, 5, 2 ) - CDate ( 2018, 3, 15 ) == 1234567 );
+  assert ( CDate ( 2018, 3, 15 ) - CDate ( 2000, 1, 1 ) == 6648 );
+  assert ( CDate ( 2000, 1, 1 ) - CDate ( 2018, 3, 15 ) == -6648 );
+  assert ( CDate ( 2018, 3, 15 ) + Year ( 3 ) + Month ( -18 ) - CDate ( 2000, 1, 1 ) == 7197 );
+  assert ( CDate ( 5398, 5, 2 ) - CDate ( 2018, 3, 15 ) == 1234567 );
 #ifdef TEST_LITERALS
   assert ( toString ( CDate ( 2000, 1, 1 ) )  == "2000-01-01" );
   assert ( toString ( CDate ( 2500, 12, 21 ) )  == "2500-12-21" );
