@@ -1,0 +1,3 @@
+/Users/admin/Desktop/progtest/2k18_summer/task_03/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/admin/Desktop/progtest/2k18_summer/task_03/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/admin/Desktop/progtest/2k18_summer/task_03/cmake-build-debug/CMakeFiles/task_03.dir

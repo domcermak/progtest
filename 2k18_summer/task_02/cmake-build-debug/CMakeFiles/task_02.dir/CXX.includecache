@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/admin/Desktop/progtest/2k18_summer/task_02/test.cpp
+cstring
+-
+cstdlib
+-
+cstdio
+-
+cctype
+-
+cmath
+-
+cassert
+-
+iostream
+-
+iomanip
+-
+string
+-
+vector
+-
+list
+-
+algorithm
+-
+functional
+-
+memory
+-
+
