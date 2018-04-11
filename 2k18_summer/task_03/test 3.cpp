@@ -522,6 +522,8 @@ string toString ( const CDate & x ) {
 int main () {
   CDate tmp ( 2000, 1, 1 );
 
+  cout << (CDate ( 1838, 5, 24 ) + Month ( -88 ) - Year ( -53 ) + Year ( 16 ) + Month ( -17 ) + Month ( 1 ) - Month ( 26 ) + Year ( 8 ) - Day ( 54 ) - CDate ( 1796, 4, 13 )) << endl;
+
   assert ( toString ( CDate ( 2000, 1, 1 ) )  == "2000-01-01" );
   assert ( toString ( CDate ( 2500, 12, 21 ) )  == "2500-12-21" );
   assert ( toString ( CDate ( 1685, 7, 11 ) )  == "1685-07-11" );

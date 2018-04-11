@@ -36,3 +36,6 @@
 *.xcuserstate
 *.xcbkptlist
 *.plist
+
+# Mac settings
+.DS_Store
