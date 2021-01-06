@@ -11,7 +11,7 @@ static inline TEMPLOYEE * findPerson (TEMPLOYEE * root, TEMPLOYEE * src, TEMPLOY
     TEMPLOYEE * tmp = src;
     size_t cnt = 0;
     
-    while ("SERU NA TO") {
+    while (1) {
         if (tmp == backup) break;
         cnt++;
         tmp = tmp->m_Next;
